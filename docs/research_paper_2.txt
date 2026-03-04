@@ -1,0 +1,406 @@
+RESEARCH ARTICLE |  APRIL 24 2025
+Cerebellar contribution to multisensory integration: A computational modeling exploration
+Special Collection: Bioengineering of the Brain
+
+Riccardo Cavadini	; Luca Casartelli	; Alessandra Pedrocchi	; Alberto Antonietti ?
+
+
+
+APL Bioeng. 9, 026109 (2025)
+https://doi.org/10.1063/5.0251429
+
+
+?
+View
+Online
+
+
+?
+Export
+Citation
+
+
+
+
+
+
+Cerebellar contribution to multisensory integration: A computational modeling exploration
+
+Cite as: APL Bioeng. 9, 026109 (2025); doi: 10.1063/5.0251429
+Submitted: 2 December 2024 . Accepted: 2 April 2025 .
+Published Online: 24 April 2025
+
+
+AFFILIATIONS
+1Department of Electronics, Information and Bioengineering, Politecnico di Milano, Milano, Italy
+2Theoretical and Cognitive Neuroscience Unit, Scientific Institute IRCCS Eugenio Medea, Bosisio Parini, Italy
+
+Note: This paper is part of the Special Topic on Bioengineering of the Brain.
+a)Author to whom correspondence should be addressed: alberto.antonietti@polimi.it
+
+ABSTRACT
+The remarkable ability of the human brain to create a coherent perception of reality relies heavily on multisensory integration-the complex process of combining inputs from different senses. While this mechanism is fundamental to our understanding of the world, its underlying neural architecture remains partially unknown. This study investigates the role of the cerebellum in multisensory integration through a novel computational approach inspired by clinical observations of a patient with cerebellar agenesis. With reference to the clinical data comparing an acerebellar patient with age-matched control subjects, we exploited biologically realistic spiking neural networks to model both conditions. Our computational framework enables testing multiple network configurations and parameters, effectively replicating and extending the clin- ical experiments in silico. To enhance accessibility and promote broader adoption among researchers, we complemented this framework with a user-friendly web-based interface, eliminating the need for programming expertise. The computational results closely mirror the clinical findings, providing support for the critical contribution of the cerebellum in multisensory integration. Beyond being a consistent proof of concept for the previous clinical observations, this study introduces a versatile platform for testing brain models through our newly developed framework and interface. Thus, this work not only advances our understanding of the cerebellar role in sensory processing but also establishes a robust methodology for future computational investigations of neural mechanisms.
+VC 2025 Author(s). All article content, except where otherwise noted, is licensed under a Creative Commons Attribution-NonCommercial- NoDerivs 4.0 International (CC BY-NC-ND) license (https://creativecommons.org/licenses/by-nc-nd/4.0/). https://doi.org/10.1063/5.0251429
+
+
+
+
+I. INTRODUCTION
+    Multisensory integration is a fundamental neural process through which the brain synthesizes information from multiple sensory modal- ities to construct a coherent representation of the environment. This sophisticated mechanism is essential for optimal perception and sur- vival, as it enables organisms to respond effectively to complex envi- ronmental stimuli. Over the past two decades, research interest in multisensory integration has grown exponentially, revealing increas- ingly complex neural circuits and challenging traditional views of sen- sory processing. Notably, studies have demonstrated that even supposedly unisensory cortical areas receive diverse sensory inputs, suggesting a more distributed and interconnected sensory processing network than previously thought. This discovery has led to a paradigm shift in our understanding of brain organization, raising the intriguing possibility that the entire brain may be inherently equipped for
+
+multisensory processing, capable of integrating sensory information in sophisticated and previously unrecognized ways.1
+    Developmental dyslexia provides a compelling illustration of the critical role of multisensory integration in human cognition. This prev- alent learning disorder, affecting approximately 10% of the popula- tion,2 manifests primarily as difficulties in reading and spelling. The underlying neural mechanisms of dyslexia reveal complex disruptions across multiple sensory systems. Visual processing deficits in dyslexic individuals are evidenced by slower processing speeds and reduced evoked potentials in response to rapid, low-contrast visual stimuli,3 suggesting both functional and anatomical alterations in the visual pathway. Similarly, these individuals exhibit impairments in auditory processing at the brainstem level.4 Perhaps most significantly, research has revealed that dyslexic individuals display atypical patterns of audiovisual integration, characterized by distinctive distributions of
+
+
+
+
+
+cross-modal attention resources that differ markedly from those observed in neurotypical individuals.5 These findings highlight how disruptions in multisensory integration can profoundly impact cogni- tive functions that we often take for granted.
+    The relationship between aging and multisensory integration reveals intriguing paradoxes in neural processing. Research has dem- onstrated that older adults exhibit enhanced multisensory processing in certain contexts, showing faster response times to audiovisual stim- uli compared to younger individuals.6 A systematic review of this phe- nomenon7 has unveiled a complex pattern: while older adults demonstrate increased integration of environmental sensory informa- tion, leading to improved response times for multisensory stimuli, they simultaneously show decreased selectivity in sensory processing. This double-edged enhancement presents both a benefit and a liability- while older individuals more readily integrate multiple sensory inputs, they also struggle to filter out irrelevant sensory information, sugges- ting age-related changes in the neural mechanisms governing sensory discrimination and integration.
+    Current research on auditory and visual motion processing has revealed a distributed neural architecture involving multiple cerebral regions and diverse physiological mechanisms. Rather than being localized to a single area, multisensory integration appears to emerge from synchronized activity across high-level cortical networks, sugges- ting a more complex and interconnected process than previously understood.8 However, precisely mapping the contributions of specific brain regions to human multisensory integration has remained chal- lenging due to limited clinical opportunities for study.
+    A groundbreaking opportunity to advance our understanding of multisensory integration mechanisms emerged through the remarkable case of R.G., a patient with complete cerebellar agenesis-a condition previously thought incompatible with life. Despite the near-total absence of his cerebellum and no other brain malformations, R.G. dem- onstrated an extraordinary capacity for adaptation, maintaining the ability to lead an independent life despite cognitive function measuring on the lower end of the IQ scale. This unique case provided researchers with an unprecedented opportunity to investigate the involvement of the cerebellum in sensory processing.9 Through a clinical and experi- mental protocol comparing R.G.'s performance with an age-matched control group, researchers uncovered intriguing patterns in his sensory processing capabilities. While R.G. showed comparable reaction time trends to isolated visual or auditory stimuli, he did not exhibit the typi- cal advantage in response times when processing combined audiovisual inputs. This selective impairment in multisensory integration-accord- ing to Ronconi et al.-would suggest the cerebellar involvement in cross-modal sensory processing. However, given the complexity of neu- ral systems and the limitations inherent in single-case studies, these clin- ical findings alone cannot definitively establish the exact role of the cerebellum in multisensory integration. As a contribution to address these limitations and provide further support to that hypothesis, we propose a computational approach using realistic neural models. Obviously, neither our computational approach can definitely establish the exact cerebellar contribution to multisensory integration, consider- ing that both the cerebellum is a complex structure and multisensory integration a multi-layered process. Nevertheless, we are confident about its potential usefulness in contributing to shed light on this issue.
+With reference to the clinical findings from R.G.'s case,9 our
+research aims to deepen the understanding of multisensory integration
+
+
+through computational modeling at the cellular level. This approach has significant implications for understanding both typical sensory processing and various neurological disorders. Our primary objective is to investigate the hypothesized role of the cerebellum in multisen- sory integration through a sophisticated computational model that preserves key aspects of neural architecture and function. To achieve this, we developed a comprehensive modeling framework that gener- ates and processes biologically realistic stimuli through anatomically accurate networks of spiking neurons. This framework enables system- atic manipulation of network parameters while maintaining physiolog- ical realism. To enhance accessibility and promote broader adoption among researchers, we complemented the framework with an intuitive graphical interface that eliminates programming prerequisites, enabling researchers from diverse backgrounds to conduct complex neural simulations.
+    First, we run simulations with just a network that reproduces the cortex in the brain to represent the acerebellar patient. Then, we give the same inputs to a model that also includes a cerebellar network to represent the control group. After running the simulations, we evaluate and compare the results of the two brain models, with and without the cerebellar component.
+    We begin by examining the existing brain models and their clini- cal applications, particularly emphasizing their contributions to under- standing neural processes. Next, we present a comprehensive analysis of our findings, integrating clinical observations and computational results to provide insight into cerebellar involvement in multisensory integration. Finally, Sec. VI presents our methodological framework, detailing the technological foundations of our approach and explaining how we adapted and implemented the clinical protocol to explore vari- ous network configurations systematically.
+II. STATE OF THE ART
+    Understanding the intricate neural system of the brain remains one of the greatest challenges in neurosciences. Major initiatives, such as the European Human Brain Project and the U.S. Brain Initiative, made significant strides toward mapping neural connectivity and understanding brain dynamics.10,11 While a complete understanding remains elusive, various models have emerged to explain brain struc- ture and function.
+    The evolution of brain modeling has progressed from theoretical mathematical approaches to sophisticated computational simulations. The seminal Hodgkin-Huxley model12 demonstrated how mathemati- cal frameworks could describe complex neural processes through ionic current dynamics. However, the limitations of purely mathematical models led to the development of physiologically inspired computa- tional approaches. Recent advances in supercomputing have enabled increasingly realistic large-scale cortical and cerebellar simulations, though current models still operate at speeds significantly slower than real time.13
+    These computational models hold substantial clinical promise, particularly in understanding neurological disorders and developing targeted therapies. Their potential applications extend from improving deep brain stimulation techniques to advancing neuropsychiatric treat- ments.14 In the specific context of multisensory integration, Bayesian frameworks have emerged as powerful tools for predicting multisen- sory responses, with newer models incorporating biological constraints to better align with empirical findings.1
+
+
+
+
+
+    Spiking neural networks (SNNs) represent a crucial advancement in computational neuroscience, offering greater biological realism than traditional artificial neural networks. By incorporating temporal dynamics and membrane potential characteristics, SNNs more accu- rately simulate neural information transfer.15 Various tools facilitate SNN research, including the MUSIC framework for multi-scale neural simulations16 and NEST Desktop's user-friendly interface.17,18 These tools enabled our replication of the experimental protocol from Ronconi et al., allowing us to investigate the putative cerebellar involvement in multisensory integration through multiple simulations.
+III. RESULTS
+    Our primary objective was to computationally test the hypotheti- cal cerebellar contribution to multisensory processing with reference to Ronconi et al. results. We did it through detailed simulations of their experimental protocol (see Sec. VI B for details). The development of our experimental protocol revealed the need for an automated system capable of executing multiple network simulations simultaneously. This led to the creation of MuSiN (Multiple Simulations on NEST), a comprehensive platform designed to accommodate both technical and non-technical users. Our study employs the NEST Simulator frame- work19 to develop and implement SNNs. NEST can simulate electro- physiological experiments, enabling researchers to conduct neural investigations in silico rather than through traditional in vitro or in vivo methods.
+    For acerebellar simulations, we implemented dual cortical net- works, each processing a single sensory modality, with response times in audiovisual conditions calculated using the race model. This archi- tecture successfully reproduced both qualitative and quantitative aspects of the acerebellar patient's response patterns observed in the clinical study. This dual-network approach was adopted since a direct merging of visual and auditory stimuli sent to a single cortical module led to network oversaturation and unreliable results. While network parameter retuning could have addressed this issue, such an approach would have required a separate network for audiovisual processing, contradicting physiological evidence of parallel processing in auditory and visual cortices. The bioinspired cerebellar network was configured to process combined sensory inputs, with each granule cell (GC) receiving two auditory and two visual fibers. This implementation achieved response times closely matching clinical observations across all three stimulation modalities: visual, auditory, and audiovisual.
+    Network responses were monitored through the spiking activity of specific neural populations: populations A and B in the cortical net- works and deep cerebellar nuclei (DCN) subpopulations in the cerebel- lar network. Each population group is specialized to respond to either left or right stimuli, enabling directional discrimination in sensory processing. Figure 1 illustrates cortical activity during auditory stimula- tion trials. The visualization combines raster plots showing neuron spikes with histograms depicting population-wide firing rates over time. The trial side is indicated by yellow markers (upper for right tri- als and lower for left trials). The results demonstrate precise stimulus- response specificity: population A activates selectively during left-sided stimuli, while population B responds to right-sided stimuli. Visual stimuli elicit similar response patterns but with slightly increased response latency (not shown).
+    Figure 2 presents a comprehensive visualization of cerebellar neu- ral dynamics across different cell populations and experimental condi- tions. The activity matrix is organized with neural populations
+
+
+(granule cells, Purkinje cells, and deep cerebellar nuclei) represented in rows, while columns correspond to sequential experimental phases: training followed by auditory, visual, and audiovisual test conditions. Stimulus laterality is indicated through marker position (upper for right and lower for left), with color-coding distinguishing between auditory (yellow) and visual (red) stimuli. The results reveal efficient inhibitory control by Purkinje cells (PCs) over DCNs, manifesting as mutually exclusive activation patterns. This learned directional selec- tivity, established during the training phase, results in distinct DCN subpopulation responses: one half activating exclusively to left-sided stimuli and the other to right-sided stimuli. This pattern demonstrates the successful implementation of stimulus-specific learning and response selectivity within the cerebellar network.
+    The cumulative distribution functions of response times across all experimental conditions were processed into percentiles (0.05-0.95). The plots contrast two computational configurations (Fig. 9): the dual cortical network representing R.G.'s acerebellar condition and the cere- bellar network modeling control group behavior. Comparison with Ronconi et al. clinical data demonstrates consistency between our computational results and the experimental findings for both neural architectures, indirectly supporting the validity of our modeling approach.
+IV. DISCUSSION
+    Research has firmly established that the human brain excels at integrating information from multiple senses to create a coherent per- ception of our environment.20,21 Building on this understanding, Ronconi et al. proposed the hypothesis that the cerebellum, tradition- ally viewed primarily as a motor control center, might play a crucial role in this multisensory integration process. To further test this hypothesis from a different but potentially convergent perspective, we developed a computational framework based on their clinical experi- ments in silico, designing two distinct neural architectures-a cortical network to model the acerebellar patient's condition and a cerebellar network to simulate the control group's neural processing.
+    To ensure robust validation, we conducted multiple simulation runs that captured natural variability in neural responses. The results were clear: our computational models produced response patterns that matched the clinical observations both qualitatively and quantitatively. This close alignment between simulated and clinical data provides strong support for cerebellar involvement in multisensory integration. The mechanism behind this integration capability appears to lie in the unique architecture of the cerebellar granular layer, as proposed in pre- vious studies.22,23 These neurons form the cerebellum's input layer, acting as the first point of convergence for sensory information. What makes them particularly suited for multisensory integration is their precise four-input structure-each GC receives information from both sensory modalities in a carefully controlled manner. This architectural constraint proves crucial for successful integration in ways that distin- guish it from cortical processing. To understand why this structure is so effective, consider how it differs from a direct stimulus merger in cortical modules: while cortical networks can become oversaturated when processing combined sensory inputs, the cerebellar model main- tains optimal activation levels through two key mechanisms. First, the strict limit of four inputs per GC creates a sparse but sufficient pattern of activity during single-modality stimulation. When multiple modali- ties are present, this same architecture allows for enhanced but con- trolled activation, never reaching overwhelming levels. Second, the
+
+
+
+
+
+
+
+
+inherent non-linear processing characteristics of individual GCs pro- vide an additional layer of regulation, ensuring that the granular layer's output remains physiologically appropriate before being further refined by PCs. This elegant solution demonstrates how the cere- bellum's microscopic structure is nicely adapted for integrating multi- ple sensory streams while maintaining precise control over neural activation-a finding that expands our understanding of both cerebel- lar function and sensory processing in the brain.
+    Recent morphological studies by Chabrol et al. have revealed that cerebellar GCs predominantly receive inputs from diverse brainstem regions,24 a connectivity pattern that was subsequently confirmed through in vivo observations. These anatomical findings provide cru- cial biological validation for our computational model, reinforcing our hypotheses about the fundamental role of GCs, and by extension the entire cerebellum, in multisensory integration. The implications of this work extend far beyond basic cerebellar physiology. Understanding how the cerebellum can contribute to integrating diverse sensory inputs could have a significant impact on our approach to various developmental and neuropsychiatric disorders.25,26 For instance, this insight could shed new light on the sensory processing challenges observed in dyslexia, where difficulties in integrating visual and audi- tory information significantly impact reading ability. Similarly, in Parkinson's disease, where patients often struggle with sensorimotor integration, a deeper understanding of cerebellar processing could inform more effective therapeutic strategies.
+    MuSiN offers a comprehensive solution for managing SNN simu- lations in NEST (see Sec. VI A for details), enabling researchers to con- duct repeatable, stable, and consistent neural simulations without direct code manipulation. The platform facilitates parameter explora- tion and experimental execution through an intuitive web interface, eliminating the need for programming expertise while maintaining full experimental control. The system's utility manifested throughout our
+
+research process in several key areas. It significantly accelerated param- eter optimization through efficient exploratory analysis, provided clear experimental oversight through organized summary tables and visual- izations, and ensured result reproducibility through precise parameter tracking. The platform's data management system, combining struc- tured output files with a relational database, facilitates both real-time and offline analysis while maintaining comprehensive execution records. While the graphical interface accommodates most common research scenarios, the framework's modular architecture enables straightforward adaptation for specialized experimental requirements. This flexibility, combined with the platform's user-friendly design, makes sophisticated neural simulations accessible to researchers regardless of their technical background. The system preserves all the capabilities of the underlying NEST Simulator while abstracting away implementation complexities, creating an efficient bridge between computational neuroscience tools and research workflows.
+
+A. Limitations
+    Our study presents several limitations that should be considered when interpreting the results. First, our model focuses exclusively on cerebellar contributions to multisensory integration without imple- menting cortical integrative mechanisms. This represents a significant simplification of the neural architecture underlying multisensory inte- gration, as substantial evidence demonstrates that multisensory inte- gration occurs across multiple brain regions, particularly in specialized cortical areas.27-29
+    A critical limitation is that our model represents sensory path- ways as parallel and non-interacting systems, where the faster modality inevitably "wins" without the benefit of integrative processing. This does not accurately reflect the cortical interactions and convergence documented in the biological literature, where sensory pathways
+
+
+
+
+
+
+
+
+interact and ultimately converge in dedicated multisensory integrative areas. In biological systems, these interactions are fundamental to the emergence of multisensory enhancement effects that exceed predic- tions of the race model.
+    It is worth noting that our current model does not incorporate the spontaneous firing activity that is characteristic of PC, DCN, and other cerebellar neurons in vivo. This simplification was made to maintain model accessibility and computational efficiency. In biological cerebellar circuits, this spontaneous activity serves an important function by enabling bidirectional modulation of neuronal firing rates.30 Future iter- ations of this model could explore the implementation of spontaneous firing patterns to determine if there are subtle computational effects that our current simplification does not capture.
+    It is also important to acknowledge the limitations inherent in bas- ing our model partly on findings from a single case study (R.G.). While
+
+single case studies have provided fundamental insight throughout the history of neurology, neuropsychology, and neuroscience,31,32 prudence is imperative when inferring general conclusions from rare or unique clinical pictures. We cannot a priori exclude that R.G.'s neurocognitive profile simply results from exceptional, and largely unintelligible, brain plasticity recovery mechanisms. Given these inherent constraints, we are not claiming that multisensory integration entirely depends on or is modulated tout court by the cerebellum, as this would clearly contradict the substantial body of literature described in our introduction.
+    Rather, a more plausible hypothesis consistent with both Ronconi et al. findings and our computational study is that the cerebellum con- tributes to multisensory integration processing. This more nuanced perspective aligns with recent studies revealing both the complex func- tional architecture of the cerebellum33,34 and the multi-layered archi- tecture of multisensory processing.35,36
+
+
+
+
+
+    Our aim in this work was not to create a comprehensive model of the entire multisensory integration brain architecture but rather to test whether a cerebellum-focused computational model could provide insight into the hypothesis that the cerebellum plays a supportive, facil- itatory, or modulatory role in multisensory processing. Future models should integrate both cerebellar and cortical components, including integrative areas, to more accurately represent the distributed nature of multisensory integration in the brain, although this represents a significant computational challenge given the complexity of cortical integration processes. In addition, creating a biologically plausible cortico-cerebellar communication system would require detailed low- level data that is currently sparse in the literature. Without sufficient constraints from empirical data, we risk introducing additional assumptions that might undermine biological realism rather than enhance it.
+    The evolution of the platform could be significantly enhanced through the integration of automated parameter optimization capabili- ties. While the current system requires manual parameter range selec- tion, increasing model complexity makes this approach increasingly challenging. Integration of evolutionary algorithms, particularly through established open-source solutions like BluePyOpt,37 could improve this process by enabling automated multi-dimensional parameter optimization based on user-defined cost functions. Beyond parameter optimization, MuSiN has the potential to evolve into a col- laborative platform for computational neuroscience research. By serv- ing as a repository for neural network models and associated metadata, it could facilitate knowledge sharing and reproducibility in brain modeling research. This collaborative aspect would transform the plat- form from a simulation tool into a comprehensive resource for compu- tational neuroscience, enabling researchers to build upon each other's work more effectively.
+V. CONCLUSIONS
+    This research originated from a very rare (not to say unique) clinical opportunity: the study of a patient with near-total cerebellar agenesis with relatively preserved neurocognitive functioning; this clinical picture provided valuable insight into the investigation of cerebellar role in non-motor functions, notably in multisensory inte- gration.9,38,39 The clinical study compared responses to unimodal and multimodal sensory stimuli between the acerebellar patient and neurotypical controls, revealing differences in multisensory process- ing indexes. This led to hypothesizing the critical-while previously underestimated or even neglected-cerebellar role in multisensory integration.
+    Our current work provides a compelling translation of that clini- cal investigation into a computational framework through physiologi- cally realistic SNNs. Even if there are clear limitations due to the comparison of very different approaches that have intrinsic methodo- logical and technical constraints, the development of detailed in silico models allowed us to replicate the experimental findings with remark- able fidelity, both qualitatively and quantitatively.
+    Noteworthy, to facilitate this research and future investigations, we developed MuSiN, a comprehensive platform combining an intui- tive web interface with a robust computational backend. This system enables researchers, regardless of programming expertise, to conduct sophisticated neural simulations and parameter explorations. The plat- form's current implementation, while self-hosted, lays the groundwork for a potential collaborative research tool that could enable the sharing
+
+
+of network models and experimental results across the research com- munity. To conclude, this work not only advances our understanding of cerebellar function, and notably of cerebellar contribution to MSI, but also provides a valuable tool for future investigations into neural processing.
+
+VI. METHODS
+    This section details the computational framework and experi- mental design of our study. We begin by examining the cutting-edge technologies that form the foundation of our research platform. Following this, we provide a comprehensive analysis of how we adapted the original clinical protocol to our computational environ- ment, ensuring fidelity to the experimental conditions while leveraging the advantages of in silico modeling. This section concludes with a thorough examination of our web-based infrastructure and graphical user interface (GUI). We detail the software architecture, emphasizing the interplay between different components and services to create a robust, user-friendly research platform.
+
+A. Materials
+    Our study employs the NEST Simulator framework19 to develop and implement SNNs. NEST can simulate electrophysiological experi- ments, enabling researchers to conduct neural investigations in silico rather than through traditional in vitro or in vivo methods. The framework is built around two fundamental components: nodes and connections. Nodes can represent either neurons or devices, while connections model synaptic interactions between nodes. Within this framework, neurons can establish multiple unique connections, each characterized by distinct properties that influence neural communica- tion. Devices serve as specialized NEST elements that facilitate network interaction and analysis: they can deliver stimuli to neurons, monitor network activity in real time, and record specific neural parameters. These devices are essential for implementing experimental protocols, observing neural dynamics, and collecting simulation data.
+    The core of the infrastructure was implemented in Python, utiliz- ing PyNEST-a Python interface that communicates with the high- performance Cþþ-based NEST kernel.40 Through PyNEST's compre- hensive API set, we implemented essential neural simulation functions, including neuron creation, network connectivity, and activity monitor-
+ing. Our implementation is based on NEST version 2.18.041 in con- junction with Python 3.6.9. To ensure efficient computation of complex neural simulations, we deployed our framework on a high- performance server with the following specifications: Intel(R) Xeon(R) CPU E5-2690 v3 (2.60 GHz), 16 CPU cores with single-thread process- ing, 64 GB RAM, and Ubuntu 20.04.2 LTS operating system.
+
+B. Experimental setup
+    Our research aims to computationally test and extend the find- ings of Ronconi et al. through in silico modeling. This work specifically addresses their hypothesis regarding cerebellar involvement in multi- sensory integration, translating their clinical observations into a com- putational framework. By developing detailed neural models, we try to provide support to their conclusion that the cerebellum plays a central role in multisensory processing.
+
+
+
+
+1. Clinical experiment setup
+    The clinical protocol placed participants in front of a screen equipped with stereo speakers, where they were tasked with respond- ing to various sensory stimuli [Fig. 3(a)]. Participants indicated stimulus location by pressing "Z" for left-sided stimuli and "M" for right-sided stimuli. The experimental design incorporated three dis- tinct stimulation conditions, as follows:
+• Visual condition: A black square appeared against a light back- ground in either the left or right visual hemifield, without audi- tory accompaniment.
+• Auditory condition: A 500 Hz tone was delivered through either
+the left or right speaker, without visual accompaniment.
+• Audiovisual condition: Synchronized presentation of both visual and auditory stimuli on the same side.
+    To prevent anticipatory responses, stimuli were presented at ran- domized intervals within each trial. Response times were recorded from stimulus onset to key press, with a maximum response window of 2000 ms.The observation that simultaneous audiovisual stimuli typi- cally elicit faster responses than isolated stimuli can be explained through many theoretical frameworks, with the two foundational being:
+• Race models, which propose that sensory signals are processed through independent channels, with the faster channel determin- ing the overall response time.42 This model treats each sensory pathway as a separate competitor in a neural "race."
+
+
+• 
+Coactivation models, suggesting that multimodal stimuli are inte- grated into a single entity before processing,43 implying early sen- sory convergence.
+    Given the lack of physiological evidence for pre-processing sen- sory merger, the race model provides a more plausible framework for predicting multisensory response times. However, faster audiovisual responses alone do not necessarily indicate true multisensory integration, as statistical facilitation could account for such enhancement.42
+    To differentiate between statistical facilitation and genuine multi- sensory integration, Miller introduced the race model inequality.44 This mathematical test has become the standard tool for analyzing response time patterns. Violating the race model inequality implies enhanced multisensory performance, beyond what could have been predicted by independent parallel processing alone. Our simulations show that the cerebellar network consistently surpasses the race-model boundary, suggesting neural interaction between sensory pathways. Ronconi et al. employed this analytical framework to evaluate their experimental results and identify actual multisensory integration [Fig. 3(b)]. Therefore, a violation of the race model serves as one key indicator of cross-modal facilitation but does not exclude the possibil- ity of other integrative mechanisms.
+    Our computational implementation slightly differs from Ronconi et al. as their protocol involved randomly intermixed stimulus condi- tions across 90 experimental trials, whereas our simulations separate these conditions into distinct blocks. This deviation, however, does not impact our results due to a fundamental difference between in vivo and in silico testing: in our computational model, all plasticity mecha- nisms are explicitly disabled during the testing phase. With plasticity turned off, the network's synaptic weights remain fixed throughout testing, making the order of stimulus presentation irrelevant to the outcome. This contrasts with human experiments, where randomiza- tion is necessary to prevent learning effects. Additionally, we guarantee complete neural reset between trials by waiting for all neuronal activity to cease before initiating subsequent tests, further ensuring trial inde- pendence. These methodological adaptations maintain the validity of our results while accommodating the computational nature of our approach. The key experimental measure-violation of the race model inequality-remains directly comparable between our simulations and the original study despite these procedural differences.
+From a physiological point of view, there is an extensive literature
+demonstrating that modality switching between trials engages specific cognitive mechanisms in human participants. Findings from various studies45-47 indicate that switching between different sensory modali- ties can result in increased reaction times and errors due to the need for cognitive reallocation of attentional resources.
+    Ronconi et al. used relatively long intervals, likely mitigating some switching costs by providing sufficient recovery time between sensory presentations. However, the unpredictability of the upcoming stimulus modality would still engage preparatory attentional mecha- nisms that might influence the overall pattern of results in human participants.
+
+2. Network models
+    We developed distinct neural network architectures representing the cerebral cortex and cerebellum to simulate response patterns in
+
+
+
+
+
+both the acerebellar patient and control participants. These configura- tions enabled us to model two distinct cases, as follows:
+• Acerebellar patient model: we modeled R.G.'s brain architecture using only cortical networks, reflecting his cerebellar agenesis. The model comprises two independent networks-one for visual and the other for auditory processing-each receiving its respec- tive unimodal input. These networks operate in parallel but inde- pendently, simulating the distinct processing streams of visual and auditory cortices. Importantly, there is no integration or communication between these cortical pathways in our model. The system's final response time is determined by the fastest of the two cortical outputs;
+• Control group model: The neurotypical brain architecture is
+implemented with a cerebellar network operating in parallel with visual and auditory cortices. In this configuration, the cerebellum actively participates in sensory processing alongside cortical regions. It is crucial to note that the cortical and cerebellar net- works in our simulations are not integrated but rather simulated in parallel, without direct communication between these systems. They represent alternative processing pathways rather than inter- connected components. The response time of the system for each trial is determined by the fastest output among the cerebellar and cortical pathways, reflecting our simplified implementation of multisensory processing in the intact brain.
+    This parallel simulation approach reflects our focus on compar- ing the processing capacities of each system independently, rather than modeling their interactions. While we acknowledge that bidirectional communication between cortical and cerebellar structures exists in biological systems (as discussed in our Limitations section), our cur- rent implementation simplified this relationship to isolate specific aspects of cerebellar contributions to multisensory processing.
+    Our network model of the cortex implements a well-established decision-making model48,49 originally developed for visual discrimination tasks. This model's foundation in biophysically realistic cortical dynamics made it particularly suitable for our study. We based our development on an existing Brian Simulator implementation,50,51 carefully recalibrating parameters for NEST compatibility.52 The network architecture (Fig. 4) consists of three primary populations: two excitatory populations (A and B) that respond to left and right stimuli, respectively, and one inhibitory interneuron population that connects to both excitatory groups. The excitatory populations are fully connected. During each trial, the network receives stimulus-dependent input to either population A or B, while all neurons receive continuous Poisson-distributed background noise to simulate realistic neural activity.
+To enable comparison with Ronconi et al. findings, we developed
+an approach for analyzing neural response times. Our method processes the firing patterns of excitatory populations A and B by calculating pop- ulation firing rates. These data are binned in intervals of 5 ms, for a good temporal resolution, and a moving average is applied to smooth the firing rates. Response times are then determined based on pre-set
+
+
+
+
+
+To achieve physiologically plausible response patterns that aligned with clinical observations, we conducted multiple calibration simulations, systematically adjusting input firing rates and neuron population sizes. This parameter optimization process treated the network as a black box model, with outputs calibrated to match clinical response times while maintaining physiologically realistic input values to avoid overfitting. The final input parameters used in our simulations, implemented through NEST spike generators, are detailed in Table I.
+    For cerebellar modeling, we utilized CerebNEST,53 a specialized NEST module designed for simulating physiologically realistic cerebel- lar circuits. Our implementation incorporated the primary cerebellar cell populations in parallel with the decision-making network, process- ing identical input stimuli. The model included four key neural popu- lations based on proportions from Casellato et al.:54 2000 granule cells (GC), 100 Purkinje cells (PC), 100 inferior olive neurons (IO), and 50 deep cerebellar nuclei (DCN) neurons (Fig. 5). This architecture main- tains biological realism while capturing essential cerebellar dynamics and plasticity mechanisms.
+    The cerebellar network architecture was designed to preserve key anatomical features of cerebellar circuitry. Each GC receives four dis- tinct inputs: two auditory and two visual signals from either the left or right side, assigned randomly. This anatomical precision ensures physi- ologically realistic input processing at the first cerebellar layer. The net- work's higher-order organization follows established cerebellar anatomy: GCs project to PCs, which are divided into left and right sub- populations. Each PC subpopulation provides inhibitory input to its corresponding DCN subpopulation. DCNs also receive direct excitatory inputs from sensory stimuli, creating a parallel processing pathway. IO neurons provide feedback to PCs based on trial-side information, implementing a supervised learning mechanism. The DCN population,
+TABLE I. Details of the sensory inputs as they were provided to the networks. They represent the firing rate, the number of neurons, and the latency of the first spike.
+
+rate thresholds, from which we generate cumulative probability distri-		
+
+butions. To maintain compatibility with the original study's format, we
+
+Type	Rate	Number of neurons	First spike latency
+
+converted our data into percentiles, enabling comparison between our		
+
+computational results and the clinical findings presented in Fig. 3(b).
+    We adopted the 15 Hz threshold established by Wang49 to ensure reliable discrimination between stimulus-specific population responses.
+
+Visual	30 Hz	80	220 ms
+Auditory	30 Hz	80	180 ms
+
+
+
+
+
+
+
+
+
+split equally between left and right encoding neurons, serves as an out- put layer. The final directional decision is determined by the subpopula- tion showing higher activation during each trial.
+    We want to stress the fact that we wanted to avoid overfitting the model onto the clinical data, and we therefore implemented a preexist- ing decision-making network for the cortex and a biologically and physiologically inspired network for the cerebellum.
+    The cerebellar network, unlike its cortical counterpart, requires a training phase to develop accurate decision-making capabilities. Our experimental protocol comprises distinct training and testing phases that leverage synaptic plasticity mechanisms observed in biological cer- ebellar circuits. During training, we implement experience-dependent learning through long-term potentiation and depression at granule cell-Purkinje cell synapses, well-documented plasticity mechanisms observed across various cerebellar learning paradigms.55-57 The learn- ing process is driven by IO neurons, which provide feedback signals to PCs, enabling synaptic plasticity and, in particular, long-term depres- sion of PCs and the corresponding increase in DCN activity. Training consists of randomly sequenced unimodal (either auditory or visual) stimuli, allowing the network to develop appropriate response patterns through synaptic weight adjustments. After the training phase, we completely disable synaptic plasticity and conduct three distinct test phases: (i) auditory-only stimuli, (ii) visual-only stimuli, and (iii) com- bined audiovisual stimuli.
+To evaluate the capacity of the cerebellar network to perform
+some kinds of multisensory integration, we exclusively used unimodal stimuli (auditory or visual) during the training phase. By withholding combined stimuli (audiovisual), we could actually test whether the sys- tem, after learning unimodal associations, would naturally integrate novel multimodal signals. This approach was chosen to investigate the generalization capabilities of the cerebellum, rather than its ability to recognize previously encountered combinations of stimuli.
+
+C. Infrastructure setup
+    MuSiN employs a client-server architecture where the server is built with Flask (Python microframework) exposing REST APIs,58
+
+
+while the client is a web-based application developed in Angular (ver- sion 14.1.2). Communication between client and server occurs via JSON-formatted HTTP requests and responses, with a core framework managing essential simulation functions, including input-network mapping and output visualization. The platform enables users to con- figure input stimuli and network parameters, execute multiple simulta- neous simulations, and explore and analyze simulation results through an intuitive interface. This functionality is achieved through a carefully structured system architecture comprising four main components (Fig. 6): the graphical user interface, API endpoints and their capabili- ties, database structure and management, and computational frame- work implementation. These components are detailed in subsequent sections, providing a comprehensive overview of the platform's techni- cal infrastructure and operational capabilities.
+To make the system easy to install, we provided a set of Docker
+images, managed by a docker-compose.yaml file. This makes it trivial to run the web server, expose the endpoints, and manage the MySQL database through PHPMyAdmin.
+
+1. Graphical user interface
+    Our web-based GUI, inspired by NEST-Desktop,17,18 provides an intuitive platform for executing and managing multiple neural simula- tions. The interface comprises two main sections: simulation configu- ration and results exploration. The simulation configuration is based on some call to actions:
+
+
+
+
+
+
+	
+
+
+1. Networks: allows users to select one of the networks that have been implemented in the system. It enables customization of net- work parameters, including membrane potentials, connection delays, and plasticity values, with pre-configured defaults available;
+2. Inputs: allows users to select a specific preexisting input (already saved in the database), or to define a new one. Then, users can mod- ify parameters such as firing rate, first spike latency, number of neu- rons, and trial duration. The system supports parameter range specification for automated testing of multiple configurations;
+3. Connection: lets users choose how they want to connect inputs to network sides.
+    The results exploration section presents a comprehensive view of completed simulations, allowing users to examine neural activity plots and replicate previous experiments. This systematic approach enables both beginner and experienced users to effectively manage complex neural simulations while maintaining full control over experimental parameters.
+
+2. API
+    The frontend application interfaces with the backend server through a structured set of REST APIs, each end point serving specific functional requirements. The API architecture is organized into five main functional domains, as follows:
+    Input management endpoints handle stimulus-related data oper- ations, enabling users to retrieve existing input configurations and cre- ate new input types with custom parameters. These endpoints ensure users have access to comprehensive information about available stim- uli while maintaining the ability to expand the system's capabilities.
+    Execution history endpoints facilitate access to previous simula- tion data, allowing users to review past experiments and replicate sim- ulations with identical parameters. This functionality supports result reproducibility and enables additional analysis of previously completed simulations.
+    
+Network configuration endpoints provide access to network-related information, including default parameters and simulation-specific config- urations. These endpoints enable users to both retrieve standard network settings and customize parameters for specific experimental needs.
+    Plot Management endpoints handle the visualization aspects of simulations, controlling the generation and retrieval of neural activity plots and other visual representations of simulation results.
+    Simulation Control endpoints manage the core functionality of executing simulations with specified inputs and network configura- tions, orchestrating the actual experimental procedures.
+
+
+
+
+
+
+
+	
+
+
+
+3. Database
+    MuSiN's backend is supported by a MySQL relational data- base, chosen for its intuitive data representation and efficient query capabilities. The database schema mirrors the application's core functionalities, maintaining data for simulation execution, network configurations, and experimental results. The interac- tion with the database is simplified thanks to the usage of SQLAlchemy, a Python Object Relational Mapper. This inte- grated database design enables maintaining a complete record of experimental configurations and results for reproducibility and analysis.
+The structure of the database is shown in Fig. 7.
+
+4. Computational framework
+    At a high level, the system works as shown in Fig. 8. The frame- work in the backend orchestrates all simulation tasks through a com- prehensive collection of functions. The system expects to be accessed through HTTP calls to endpoints, exposing information about existing networks and inputs.
+    After receiving such information, frontend users can describe how they want their simulation to be run and can POST the parameters for execution. The backend takes care of checking that
+
+
+all necessary elements are given and proceeds with the instantia- tion of networks, the creation of stimuli, and the actual simulation. Detailed outputs are produced and saved, including population fir- ing rates, spike timing data, network status plots, and trial-specific information, all organized to facilitate comprehensive offline anal- ysis. The outputs follow a systematic organizational structure within the filesystem. A simulations folder contains specific execution subfolders, to store simulation-specific data and results. These folders are named with their corresponding execution codes to make them easy to access.
+    The framework adopts a modular architecture, organizing code into function-specific subprocesses that enhance reusability and facili- tate feature implementation. This design philosophy supports facili- tated experimental workflows while maintaining flexibility for customization.
+    The approach based on HTTP calls enables efficient testing of multiple experimental configurations with minimal code modification, making the framework accessible to researchers regardless of their pro- gramming expertise.
+ACKNOWLEDGMENTS
+    L.C. is supported by the Italian Ministry of Health (Ricerca Corrente, Scientific Institute IRCCS MEDEA, Grant No. RC2023)
+
+
+
+
+and by the 5per1000 funds for biomedical research (Scientific Institute IRCCS MEDEA, Grant No. 1093).
+The  project  "EBRAINS-Italy  (European  Brain  ReseArch
+INfrastructureS-Italy)," granted by the Italian National Recovery and Resilience Plan (NRRP), M4C2, funded by the European Union-NextGenerationEU (Project IR0000011, CUP B51E22000150006, "EBRAINS-Italy") to A.A. and A.P. funded this work and fully covered the publication fees of this article.
+
+AUTHOR DECLARATIONS
+Conflict of Interest
+The authors have no conflicts to disclose.
+
+Ethics Approval
+Ethics approval was not required.
+
+Author Contributions
+Riccardo Cavadini: Data curation (equal); Formal analysis (equal); Investigation (lead); Methodology (supporting); Resources (lead); Software (lead); Writing - original draft (lead); Writing - review & editing (equal). Luca Casartelli: Conceptualization (lead); Data curation (equal); Investigation (supporting); Project administration (supporting); Supervision (equal); Validation (supporting); Writing - review & editing (supporting). Alessandra Pedrocchi: Funding acquisition (lead); Supervision (equal); Writing - review & editing (supporting). Alberto Antonietti: Conceptualization (lead); Investigation (equal); Methodology (equal); Project administration (equal); Resources (equal); Software (supporting); Supervision (lead); Visualization (sup- porting); Writing - original draft (supporting); Writing - review & editing (equal).
+
+DATA AVAILABILITY
+    The data that support the findings of this study are openly available in GitHub at https://github.com/wakephul/musin-backend, Ref. 59.
+
+REFERENCES
+1B. E. Stein, T. R. Stanford, and B. A. Rowland, "Multisensory integration and the society for neuroscience: Then and now," J. Neurosci. 40, 3-11 (2020).
+2J.-F. D?emonet, M. J. Taylor, and Y. Chaix, "Developmental dyslexia," Lancet
+363, 1451-1460 (2004).
+3M. S. Livingstone, G. D. Rosen, F. W. Drislane, and A. M. Galaburda, "Physiological and anatomical evidence for a magnocellular defect in develop- mental dyslexia," Proc. Natl. Acad. Sci. U. S. A. 88, 7943-7947 (1991).
+4K. I. McAnally and J. F. Stein, "Auditory temporal coding in dyslexia," Proc. R.
+Soc. London, Ser. B 263, 961-965 (1996).
+5V. Harrar, J. Tammam, A. P?erez-Bellido, A. Pitt, J. Stein, and C. Spence, "Multisensory integration and attention in developmental dyslexia," Curr. Biol. 24, 531-535 (2014).
+6P. J. Laurienti, J. H. Burdette, J. A. Maldjian, and M. T. Wallace, "Enhanced
+multisensory integration in older adults," Neurobiol. Aging 27, 1155-1163 (2006).
+7A. L. De Dieuleveult, P. C. Siemonsma, J. B. Van Erp, and A.-M. Brouwer,
+"Effects of aging in multisensory integration: A systematic review," Front. Aging Neurosci. 9, 80 (2017).
+8T. A. Chaplin, M. G. Rosa, and L. L. Lui, "Auditory and visual motion processing and
+integration in the primate cerebral cortex," Front. Neural Circuits 12, 93 (2018).
+
+9L. Ronconi, L. Casartelli, S. Carna, M. Molteni, F. Arrigoni, and R. Borgatti, "When one is enough: Impaired multisensory integration in cerebellar agene- sis," Cereb. Cortex 27, bhw049-2051 (2016).
+10K. Amunts, C. Ebell, J. Muller, M. Telefont, A. Knoll, and T. Lippert, "The
+human brain project: Creating a European research infrastructure to decode the human brain," Neuron 92, 574-581 (2016).
+11T. R. Insel, S. C. Landis, and F. S. Collins, "The nih brain initiative," Science
+340, 687-688 (2013).
+12M. Nelson and J. Rinzel, "The Hodgkin-Huxley model," in The Book of Genesis (Springer, 1998), pp. 29-49.
+13T. Yamazaki, J. Igarashi, and H. Yamaura, "Human-scale brain simulation via
+supercomputer: A case study on the cerebellum," Neuroscience 462, 235-246 (2021).
+14G. Deco and M. L. Kringelbach, "Great expectations: Using whole-brain com-
+putational connectomics for understanding neuropsychiatric disorders," Neuron 84, 892-905 (2014).
+15S. Ghosh-Dastidar and H. Adeli, "Spiking neural networks," Int. J. Neural Syst.
+19, 295-308 (2009).
+16M. Djurfeldt, J. Hjorth, J. M. Eppler, N. Dudani, M. Helias, T. C. Potjans, U. S. Bhalla, M. Diesmann, J. Hellgren Kotaleski, and O? . Ekeberg, "Run-time interop- erability between neuronal network simulators based on the music framework," Neuroinform. 8, 43-60 (2010).
+17J. Buchertseifer, S. Spreizer, and B. Weyers (2022). "Nest desktop" Zenodo.
+https://doi.org/10.5281/zenodo.5037050
+18S. Spreizer, J. Senk, S. Rotter, M. Diesmann, and B. Weyers, "Nest desktop, an educational application for neuroscience," eNeuro. 8, ENEURO.0274-21.2021 (2021).
+19M.-O. Gewaltig and M. Diesmann, "NEST (neural simulation tool),"
+Scholarpedia 2, 1430 (2007).
+20C. Gao, J. J. Green, X. Yang, S. Oh, J. Kim, and S. V. Shinkareva, "Audiovisual integration in the human brain: A coordinate-based meta-analysis," Cerebral Cortex 33, 5574-5584 (2023).
+21C. A. Murray and L. Shams, "Crossmodal interactions in human learning and
+memory," Front. Hum. Neurosci. 17, 1181760 (2023).
+22M. Shimuta, I. Sugihara, and T. Ishikawa, "Multiple signals evoked by unisen- sory stimulation converge onto cerebellar granule and purkinje cells in mice," Commun. Biol. 3, 381 (2020).
+23S. S. McAfee, Y. Liu, R. V. Sillitoe, and D. H. Heck, "Cerebellar coordination of
+neuronal communication in cerebral cortex," Front. Syst. Neurosci. 15, 781527 (2022).
+24F. P. Chabrol, A. Arenz, M. T. Wiechert, T. W. Margrie, and D. A. DiGregorio,
+"Synaptic diversity enables temporal coding of coincident multisensory inputs in single neurons," Nat. Neurosci. 18, 718-727 (2015).
+25S. Molholm, J. W. Murphy, J. Bates, E. M. Ridgway, and J. J. Foxe,
+"Multisensory audiovisual processing in children with a sensory processing dis- order (i): Behavioral and electrophysiological indices under speeded response conditions," Front. Integr. Neurosci. 14, 4 (2020).
+26M. Monti, S. Molholm, and C. Cuppini, "Atypical development of causal infer-
+ence in autism inferred through a neurocomputational model," Front. Comput. Neurosci. 17, 1258590 (2023).
+27C. D. Saron and R. J. Davidson, "Visual evoked potential measures of inter-
+hemispheric transfer time in humans," Behav. Neurosci. 103, 1115-1138 (1989).
+28A. Ghazanfar and C. Schroeder, "Is neocortex essentially multisensory?,"
+Trends Cognit. Sci. 10, 278-285 (2006).
+29T. Raij, J. Ahveninen, F. Lin, T. Witzel, I. P. J?a?askel?ainen, B. Letham, E. Israeli, C. Sahyoun, C. Vasios, S. Stufflebeam, M. H?am?al?ainen, and J. W. Belliveau, "Onset timing of cross-sensory activations and multisensory interactions in auditory and visual sensory cortices," Eur. J. Neurosci. 31, 1772-1782 (2010).
+30A. Geminiani, C. Casellato, H.-J. Boele, A. Pedrocchi, C. I. De Zeeuw, and E. D'Angelo, "Mesoscale simulations predict the role of synergistic cerebellar plas-
+ticity during classical eyeblink conditioning," PLoS Comput. Biol. 20, e1011277 (2024).
+31R. Adolphs, F. Gosselin, T. W. Buchanan, D. Tranel, P. Schyns, and A. R.
+Damasio, "A mechanism for impaired fear recognition after amygdala damage," Nature 433, 68-72 (2005).
+
+
+
+
+32A. A. Sokolov, M. Erb, W. Grodd, M. S. Tatagiba, R. S. Frackowiak, and M. A. Pavlova, "Recovery of biological motion perception and network plasticity after cerebellar tumor removal," Cortex 59, 146-152 (2014).
+33S. Marek, J. S. Siegel, E. M. Gordon, R. V. Raut, C. Gratton, D. J. Newbold, M.
+Ortega, T. O. Laumann, B. Adeyemo, D. B. Miller, A. Zheng, K. C. Lopez, J. J. Berg, R. S. Coalson, A. L. Nguyen, D. Dierker, A. N. Van, C. R. Hoyt, K. B. McDermott, S. A. Norris, J. S. Shimony, A. Z. Snyder, S. M. Nelson, D. M. Barch, B. L. Schlaggar, M. E. Raichle, S. E. Petersen, D. J. Greene, and N. U. Dosenbach, "Spatial and temporal organization of the individual human cere- bellum," Neuron 100, 977-993 (2018).
+34J. Diedrichsen, M. King, C. Hernandez-Castillo, M. Sereno, and R. B. Ivry,
+"Universal transform or multiple functionality? Understanding the contribu- tion of the human cerebellum across task domains," Neuron 102, 918-928 (2019).
+35M. M. Murray, D. J. Lewkowicz, A. Amedi, and M. T. Wallace, "Multisensory processes: A balancing act across the lifespan," Trends Neurosci. 39, 567-579
+(2016).
+36L. Ronconi, A. Vitale, A. Federici, N. Mazzoni, L. Battaglini, M. Molteni, and L. Casartelli, "Neural dynamics driving audio-visual integration in autism," Cerebral Cortex 33, 543-556 (2023).
+37W. Van Geit, M. Gevaert, G. Chindemi, C. R?ossert, J.-D. Courcol, E. B. Muller,
+F. Schu?rmann, I. Segev, and H. Markram, "Bluepyopt: Leveraging open source software and cloud infrastructure to optimise model parameters in neurosci- ence," Front. Neuroinf. 10, 17 (2016).
+38F. Arrigoni, R. Romaniello, A. Nordio, C. Gagliardi, and R. Borgatti, "Learning
+to live without the cerebellum," Neuroreport 26, 809-813 (2015).
+39L. Casartelli, A. Federici, A. Cesareo, E. Biffi, G. Valtorta, M. Molteni, L. Ronconi, and R. Borgatti, "Role of the cerebellum in high stages of motor plan- ning hierarchy," J. Neurophysiol. 117, 1474-1482 (2017).
+40J. M. Eppler, "PyNEST: A convenient interface to the nest simulator," Front.
+Neuroinf. 2, 12 (2008).
+41J. Jordan, H. Mørk, S. B. Vennemo, D. Terhorst, A. Peyser, T. Ippen, R. Deepu,
+J. M. Eppler, A. van Meegen, S. Kunkel, A. Sinha, T. Fardet, S. Diaz, A. Morrison, W. Schenck, D. Dahmen, J. Pronold, J. Stapmanns, G. Trensch, S. Spreizer, J. Mitchell, S. Graber, J. Senk, C. Linssen, J. Hahne, A. Serenko, D. Naoumenko, E. Thomson, I. Kitayama, S. Berns, and H. E. Plesser, (2019). "NEST 2.18.0," Zenodo. https://zenodo.org/record/2605422
+42D. H. Raab, "Statistical facilitation of simple reaction times," Trans. New York
+Acad. Sci. 24, 574 (1962).
+43M. Gondan and K. Minakata, "A tutorial on testing the race model inequality," Atten. Percept. Psychophys. 78, 723-735 (2016).
+
+44J. Miller, "Divided attention: Evidence for coactivation with redundant signals," Cognit. Psychol. 14, 247-279 (1982).
+45L. H. Shaw, E. G. Freedman, M. J. Crosse, E. Nicholas, A. M. Chen, M. S. Braiman, S. Molholm, and J. J. Foxe, "Operating in a multisensory context:
+Assessing the interplay between multisensory reaction time facilitation and inter-sensory task-switching effects," Neuroscience 436, 122-135 (2020).
+46C. Cuppini, M. Ursino, E. Magosso, M. J. Crosse, J. J. Foxe, and S. Molholm, "Cross-sensory inhibition or unisensory facilitation: A potential neural archi- tecture of modality switch effects," J. Math. Psychol. 99, 102438 (2020).
+47M. J. Crosse, J. J. Foxe, K. Tarrit, E. G. Freedman, and S. Molholm, "Resolution
+of impaired multisensory processing in autism and the cost of switching sen- sory modality," Commun. Biol. 5, 601 (2022).
+48N. Brunel and X.-J. Wang, "Effects of neuromodulation in a cortical network model of object working memory dominated by recurrent inhibition,"
+J. Comput. Neurosci. 11, 63-85 (2001).
+49X.-J. Wang, "Probabilistic decision making by slow reverberation in cortical cir- cuits," Neuron 36, 955-968 (2002).
+50D. F. Goodman and R. Brette, "Brian: A simulator for spiking neural networks in python," Front. Neuroinf. 2, 5 (2008).
+51M. Stimberg, R. Brette, and D. F. Goodman, "Brian 2, an intuitive and efficient neural simulator," eLife 8, e47314 (2019).
+52A. Trapani, F. J. Sheiban, E. Bertone, S. Chiosso, L. Colombo, M. D'Andrea, F. De Santis, F. Fati, V. Fossati, V. Gonzalez et al., "Reproducing a decision- making network in a virtual visual discrimination task," Front. Integr.
+Neurosci. 16, 930326 (2022).
+53A.  Antonietti,  see  https://github.com/alberto-antonietti/CerebNEST  for
+"Cerebnest."
+54C. Casellato, A. Antonietti, J. A. Garrido, R. R. Carrillo, N. R. Luque, E. Ros, A. Pedrocchi, and E. D'Angelo, "Adaptive robotic control driven by a versatile spiking cerebellar network," PLoS One 9, e112265 (2014).
+55M. Ito, "Cerebellar learning in the vestibulo-ocular reflex," Trends Cognit. Sci.
+2, 313-321 (1998).
+56N. R. Luque, J. A. Garrido, F. Naveros, R. R. Carrillo, E. D'Angelo, and E. Ros, "Distributed cerebellar motor learning: A spike-timing-dependent plasticity model," Front. Comput. Neurosci. 10, 17 (2016).
+57J. A. Garrido, E. Ros, and E. D'Angelo, "Spike timing regulation on the millisec-
+ond scale by distributed synaptic plasticity at the cerebellum input stage: A sim- ulation study," Front. Comput. Neurosci. 7, 64 (2013).
+58See https://www.redhat.com/en/topics/api/what-is-a-rest-api for "What is a REST API?" (2023).
+59See https://github.com/wakephul/musin-backend for "GitHub."
+
+
+
+

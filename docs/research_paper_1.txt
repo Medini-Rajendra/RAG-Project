@@ -1,0 +1,523 @@
+
+ORIGINAL RESEARCH
+   published: 03 April 2020 doi: 10.3389/fninf.2020.00016
+
+
+
+Simulation of a Human-Scale Cerebellar Network Model on the K Computer
+Hiroshi Yamaura1†, Jun Igarashi2† and Tadashi Yamazaki1*
+1 Graduate School of Informatics and Engineering, The University of Electro-Communications, Tokyo, Japan, 2 Head Office for Information Systems and Cybersecurity, RIKEN, Saitama, Japan
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Edited by:
+                 Ludovico Minati, Tokyo Institute of Technology, Japan
+Reviewed by:
+           Derek Groen, Brunel University London,
+ United Kingdom Marc De Kamps,
+University of Leeds, United Kingdom
+    *Correspondence: Tadashi Yamazaki fini19@neuralgorithm.org
+† These authors have contributed
+equally to this work
+
+Received: 21 June 2019
+Accepted: 18 March 2020
+Published: 03 April 2020
+                     Citation: Yamaura H, Igarashi J and Yamazaki T (2020) Simulation of a Human-Scale Cerebellar Network Model on the K Computer.
+   Front. Neuroinform. 14:16. doi: 10.3389/fninf.2020.00016
+
+Computer simulation of the human brain at an individual neuron resolution is an ultimate goal of computational neuroscience. The Japanese flagship supercomputer, K, provides unprecedented computational capability toward this goal. The cerebellum contains 80% of the neurons in the whole brain. Therefore, computer simulation of the human-scale cerebellum will be a challenge for modern supercomputers. In this study, we built a human-scale spiking network model of the cerebellum, composed of 68 billion spiking neurons, on the K computer. As a benchmark, we performed a computer simulation of a cerebellum-dependent eye movement task known as the optokinetic response. We succeeded in reproducing plausible neuronal activity patterns that are observed experimentally in animals. The model was built on dedicated neural network simulation software called MONET (Millefeuille-like Organization NEural neTwork), which calculates layered sheet types of neural networks with parallelization by tile partitioning. To examine the scalability of the MONET simulator, we repeatedly performed simulations while changing the number of compute nodes from 1,024 to 82,944 and measured the computational time. We observed a good weak-scaling property for our cerebellar network model. Using all 82,944 nodes, we succeeded in simulating a human-scale cerebellum for the first time, although the simulation was 578 times slower than the wall clock time. These results suggest that the K computer is already capable of creating a simulation of a human-scale cerebellar model with the aid of the MONET simulator.
+Keywords: cerebellum, human-scale model, computer simulation, spiking network model, K computer, MONET
+
+
+INTRODUCTION
+Computer simulation of the whole human brain is an ambitious challenge in the field of computational neuroscience and high-performance computing (Izhikevich, 2005; Izhikevich and Edelman, 2008; Amunts et al., 2016). The human brain contains approximately 100 billion neurons. While the cerebral cortex occupies 82% of the brain mass, it contains only 19% (16 billion) of all neurons. The cerebellum, which occupies only 10% of the brain mass, contains 80% (69 billion) of all neurons (Herculano-Houzel, 2009). Thus, we could say that 80% of human-scale whole brain simulation will be accomplished when a human-scale cerebellum is built and simulated on a computer. The human cerebellum plays crucial roles not only in motor control and learning (Ito, 1984, 2000) but also in cognitive tasks (Ito, 2012; Buckner, 2013). In particular, the human cerebellum seems to be involved in human-specific tasks, such as bipedal locomotion, natural language processing, and use of tools (Lieberman, 2014). Once a human-scale cerebellar network
+
+
+
+model is built, the computer simulation of the model will be a useful tool to examine the roles of the cerebellum in such complex tasks.
+  Several attempts have been made to simulate large-scale spiking network models on supercomputers. A large-scale model of the cerebral cortex, with 1.51 billion neurons and 16.8 trillion synapses has been built on the Japanese flagship K computer (RIKEN Center for Computational Science) (Helias et al., 2012; Kunkel et al., 2014; Jordan et al., 2018). For the cerebellum, we previously built a cat-scale cerebellar model composed of 1 billion spiking neurons on another supercomputer (Yamazaki et al., 2019). Currently, in a national project called "Post-K exploratory challenge #4," we have been building large-scale spiking network models of the cerebral cortex (Igarashi et al., 2019), basal ganglia (Moren et al., 2019), and cerebellum on the K computer.
+  In this study, we aimed to build and simulate a human- scale spiking network model of the cerebellum under the Post-K project, where we use the entire K computer system and our in-house spiking neural network simulator MONET (Millefeuille-like Organization NEural neTwork) (Igarashi et al., 2019). The MONET simulator is optimized to the K computer and its successor Fugaku (RIKEN Center for Computational Science). The simulator arranges a given large-scale spiking network on a two-dimensional layered sheet, and splits the sheet into a number of smaller tiles for parallel computing, where subnetworks on neighboring tiles can exchange spikes. This tile-based decomposition method achieves a good weak-scaling property, because it is enough for each tile to communicate with only the surrounding tiles. However, there is a strong assumption behind the tile-based decomposition: the target network must consist of mostly short-range connections and few long-range connections. In other words, a target brain region must suffice for a characteristic anatomical structure to be simulated efficiently on the MONET simulator.
+  The cerebellum is known for its regular and repeated crystallized anatomical structure (Eccles et al., 1967), which seems to be ideal for tile-based decomposition. Therefore, we built our previous spiking network model of the cerebellum on the MONET simulator while extending the network size. Owing to the characteristic structure of the cerebellum, we achieved good weak-scaling from 1,024 nodes to 82,944 nodes on the K computer. Our model is not just a baseline model showing only spontaneous activity, but a functional model that can reproduce a basic eye movement reflex task called optokinetic response (OKR). Eventually, using all 82,944 nodes of the K computer, we succeeded in simulating a human-scale cerebellar model with 68 billion neurons.
+
+MATERIALS AND METHODS
+K Computer
+Until its shutdown on August 30th, 2019, the K computer (RIKEN Center for Computational Science) was the Japanese Flagship supercomputer. We used this computer for our cerebellar simulation. An overview of the K computer is described elsewhere (Miyazaki et al., 2012). Briefly, the K
+
+computer comprised 82,944 compute nodes and 1.26 petabyte of DRAM memory in total. The peak performance was 11.3 PFLOPS. Each node had a SPARC VIIIfx CPU with 8-cores operating at 2 GHz and 16 GB of DRAM memory. The compute nodes were interconnected via six-dimensional torus called "Tofu" network. OpenMP v3.0 and MPI v2.1 were supported for parallel programming.
+Neural Network Simulator MONET
+On the K computer, we ran a versatile spiking neuron network simulator called MONET (Millefeuille-like Organization NEural neTwork) (Igarashi et al., 2019). The MONET simulator is designed to run on multi-node clusters such as the K computer. The simulator computes dynamics of a given large-scale spiking network model in parallel by partitioning the entire network into a number of small subnetworks called "tiles," assigning a tile to a processor, and performing numerical calculation on each processor independently while exchanging spikes across processors (Figure 1A). A tile can stack an arbitrary number of layered sheets in z-axis, which is suitable for building layered sheet types of neural networks naturally, such as the cerebellar cortex with three layers (granular layer, Purkinje cell layer, and molecular layer).
+   A typical use case of the simulator is as follows. First, users prepare parameter files in a JSON format that defines the simulation settings and neural network parameters, respectively. The former includes simulation time, the number of nodes to use, the size of a tile, and the output file name (Supplementary Figure S1). The latter describes layer thickness, the number of neurons in a tile, types of neurons, and connectivity among neurons (Supplementary Figure S2). The neuron parameters include membrane time constant, threshold, resting and reset values of membrane potential, external current (I_ex), and absolute refractory period. The connectivity parameters specify projection area, connection probability, receptor time constant, receptor reversal potential, and synaptic weight. Second, a python script generates intermediate files for all compute nodes from the JSON file. These intermediate files are used to build a network on the MONET simulator. The core of the MONET simulator is a C program that reads the files, executes the simulation using a forward Euler method with fixed time step of 0.1 ms, and generates output data. These data include computational time, spike time and its neuron ID, and neuron position in three-dimensional space.
+Neural Network Model of the Cerebellum
+We implemented a spiking network model of the cerebellum that we had developed previously (Figure 1B; Yamazaki and Nagao, 2012) on the MONET simulator. The model receives two afferent inputs from mossy fibers and climbing fibers. We implemented one square millimeter of the cerebellar neuronal sheet on a tile, and the number of tiles was increased to extend the network size in the x-y plane and the depth along the z-axis. Along the z-axis, we stacked seven layers: upper and lower molecular layers, Purkinje cell layer, granular layer, deep cerebellar nucleus, inferior olive, and pons with thicknesses of 0.1, 0.1, 0.03, 0.2, 0.1, 0.1, and 0.2 mm, respectively (Eccles et al., 1967). A layer can
+
+
+
+
+
+FIGURE 1 | Building a cerebellar neural network model. (A) Schematics of the tile structure composed of two-dimensional sheets of neural networks. We show the three-dimensional structure of our cerebellar network model. Dots indicate neurons. A 2 mm×2 mm of the cerebellar neuronal sheet on a tile (left) is partitioned into regular square tiles (right). Each tile communicates with the neighboring tiles to exchange spike data. (B) A schematic of the cerebellar cytoarchitecture. The cerebellum receives two types of afferents from pons cells and inferior olive cells, respectively.
+
+
+
+have multiple stacked sheets along the z-axis. Figure 1A shows the three-dimensional structure of our cerebellar network model. The upper molecular layer was composed of four sheets of stellate cells (STs), and each sheet contained 32 × 32 STs. The deep molecular layer and the Purkinje cell layer were a single sheet containing 32 × 32 basket cells (BAs), and Purkinje cells (PCs), respectively. The granular layer was composed of eight sheets of granule cells (GRs) and a sheet of Golgi cells (GOs). A GR sheet contained 320 × 320 GRs, and a GO-sheet 32 × 32 GOs. The deep
+
+cerebellar nucleus and the pons were a single sheet with 32 × 32 deep cerebellar nucleus cells (DCNs) and pons cells, respectively. The inferior olive layer contains only one sheet with one inferior olive cell (IO). Table 1 summarizes the total numbers of neurons for a tile. These numbers were set based on previous experimental data (Lange, 1974, 1975; Ito, 1984; Harvey and Napper, 1991; Heckroth, 1994). Neurons were modeled as conductance-based
+leaky integrate-and-fire units. Parameters were set based on our previous studies. Table 2 summarizes each neuron's parameters.
+
+
+
+TABLE 1 | Numbers of neurons per tile (1mm2) in each cerebellar layer.
+
+TABLE 3 | Intra-regional connection for two-dimensional Gaussian function.
+
+
+NumbersExperimental data (neuron density)PreGOIOPonsST4,09618,695 neurons/mm3 (Ito, 1984)PostGRPCGRBA1,0246,577 neurons/mm3 (Ito, 1984)PC1,024330-650 neurons/mm2 (Lange, 1975; Ito, 1984; Harvey
+and Napper, 1991)Probability at peak	0.04
+Sigma (µm)	2001
+3501
+25GR819,2001.75-2.8×106 neurons/mm3 (Lange, 1975; Ito, 1984)ReferencesCrowley et al.,Eccles et al.,Eccles et al., 1967;
+GO	1,024	629-740 neurons/mm3 (Lange, 1974)
+DCN	1,024	21,078 neurons/mm3 (Heckroth, 1994)
+
+2009; Hull and
+Regehr, 2012
+
+1967; Ito, 1984
+
+Ito, 1984
+
+IO	1
+Pons	1,024
+
+Lange (1974, 1975), Ito (1984), and Harvey and Napper (1991) report anatomical data in various species. In the table, we refer to the cat data of the references, because the present model was based on the cat data, as in previous models (Yamazaki and Nagao, 2012; Yamazaki et al., 2019). Heckroth (1994) reports data in the mouse. ST, stellate cell; BA, basket cell; PC, Purkinje cell; GR, granule cell; GO, Golgi cell; DCN, deep cerebellar nucleus cell; IO, inferior olive cell.
+
+
+  Anatomical connections among neurons were made according to the known anatomical structure (Eccles et al., 1967; Apps and Garwicz, 2005; Barmack and Yakhnitsa, 2008a). In the MONET simulator, connections were set as a two- dimensional Gaussian with parameters of the projection area and connection probability. Table 3 summarizes setting of connection probability at peak and sigma of a two-dimensional Gaussian function. Notably, implementing connections via parallel fibers needs special care, because parallel fibers do not extend radially but rectangularly. The parallel fiber connections were set by providing the width (pre_width), the length (post_width), and connection probability as in Supplementary Figure S3. Table 4 summarizes the parameters. Neurons have synapses with a-amino-3-hydroxy-5-methyl-4-isoxazolepropionic acid (AMPA) and N-methyl-D-aspartate (NMDA) or ?-aminobutyric acid type A (GABAA) and ?-aminobutyric acid type B (GABAB). Synapse dynamics were described by alpha functions. The time constants are summarized in Table 5. Each synaptic connection has its connection weight. The weight values are summarized in Table 6.
+
+Numerical Simulation of the Cerebellar Model
+First, we examined the resting state activity of the model in response to spontaneous mossy fiber input signals of 8 Hz. We measured the scalability of the simulation described below. Then,
+
+ST, stellate cell; BA, basket cell; PC, Purkinje cell; GR, granule cell; GO, Golgi cell; DCN, deep cerebellar nucleus cell; IO, inferior olive cell.
+
+
+as a benchmark test to confirm the network dynamics consistent with experimental data, we performed a computer simulation of a simple cerebellum-dependent eye movement control task called OKR. The OKR is an eye movement reflex, which is induced by slow movement of the whole visual field image on the retina. The cerebellum issues the motor command for eyes to move to the same direction with the visual field movement, so that the blur in the retinal image is reduced (Shutoh et al., 2006). In the OKR, the cerebellum receives the information of the moving speed of the visual world from nucleus reticularis tegmenti pontis (NRTP), and issues the motor command from vestibular nucleus (VN) cells. In our model, NRTP was composed of 32 × 32 cells aligned on two-dimensional grids. For NRTP
+cells, we set the membrane time constant, threshold, reset value,
+resting membrane potential, and absolute refractory period to 40 ms, -60 mV, -70 mV, -70 mV, and 1 ms, respectively. A two- dimensional Gaussian function was used for connection from NRTP cells to GRs. The connection probability at peak and sigma of the two-dimensional Gaussian function were set to 0.1 and 75, respectively. On the other hand, PCs project to VN cells. The VN was composed of 32 × 32 cells aligned on two-dimensional grids. We fed sinusoidally modulating I_ex into NRTP cells. I_ex of PCs and VN cells were set to 24 and 40 nA, respectively. We set synapse weights as shown in Supplementary Table S1. The other parameters were the same as the cerebellar network model described above.
+
+Analysis of Spike Patterns of Granule Cells
+A characteristic feature of our cerebellar model is spatiotemporal combinatorial encoding of mossy fiber input signals by
+
+
+TABLE 2 | Neuron parameters.STBAPCGRGODCNIOPonsMembrane time constant (ms)1010107.212101010Threshold (mV)-55-55-50-35-50-40-50-50Reset value (mV)-70-70-70-70-70-70-70-70Resting membrane potential (mV)-70-70-70-58-70-70-70-70I_ex (nA)002200325024Absolute refractory period (ms)1111111,5001ST, stellate cell; BA, basket cell; PC, Purkinje cell; GR, granule cell; GO, Golgi cell; DCN, deep cerebellar nucleus cell; IO, inferior olive cell.
+
+
+TABLE 5 | Time constants for synapses.
+
+Synapse	Time constant (ms)
+AMPA	2
+NMDA	100
+GABAA	2
+GABAA (GO to GR)	10
+The parameters were set based on our previous studies (Yamazaki and Nagao, 2012; Yamazaki et al., 2019). AMPA, a-amino-3-hydroxy-5-methyl-4- isoxazolepropionic acid; NMDA, N-methyl-D-aspartate; GABAA, ?-aminobutyric acid type A; GO, Golgi cell; GR, granule cell.
+population activity of a number of granule cells via random inhibitory connections with Golgi cells in the granular layer (Yamazaki and Tanaka, 2005, 2007a,b; Yamazaki and Nagao, 2012). In response to sustained mossy fiber signals, granule cells reveal different temporal activity patterns. The cells undergo random repetition of transitions between burst and silent states. The burst state is sustained for tens to hundreds of milliseconds. Because different granule cells show different temporal activity patterns, the population of active granule cells changes gradually in time (Supplementary Figure S4A). To quantify the gradual change of the active granule cell population, we employ a measure called "similarity index" defined previously.
+  We assume that the simulation time is discretized with temporal resolution dt (=0.1 ms). Let fi (t) be the spike activity of model GR i at time t (ms), thus fi (t) = 1 (GR i elicits a spike at time t), fi (t) = 0 (otherwise). Then, let zi (t) be the temporal trace of the activity of GR i (i.e., EPSPs on a PC) decayed exponentially
+with time constant tPC as follows (Yamazaki and Tanaka, 2007b):
+
+
+t
+zi (t) =
+tPC s=0
+
+
+exp
+
+
+- t - s
+tPC
+
+
+fi (s)	(1)
+
+where tPC was set at 50 ms. Here, the sum with respect to s is a discretized version of temporal integration over s with dt. We defined the similarity index SI (flt) as follows (Yamazaki and Tanaka, 2007b):
+
+
+1  I:
+
+Li zi (t) zi (t + flt)	
+
+SI (flt) = T
+
+ L  2	 L 2
+
+(2)
+
+
+where T represents the temporal duration to calculate the similarity. Here again, the sum with respect to t denotes a discretized version of temporal integration over t with flt. We set T at 2 s. The similarity index basically calculates the normalized autocorrelation for two GR populations at time t and t + flt over t. The numerator calculates the correlation, whereas the denominator normalizes the value between 0 and 1. In other words, this index represents how the two GR populations separated by flt are similar on average. If the value is 1, the populations are identical, whereas if it is 0, they are completely different. Section Supplementary Material S1 provides a more detailed explanation.
+
+
+
+Measuring Scaling Property
+Weak scaling and strong scaling are two important measures to quantify the performance of numerical simulation. In weak scaling, we increase the size of the neural network model (i.e., the numbers of neurons and synapses) while increasing the number of compute nodes involved, where the computational load per node is kept the same. Perfect weak scaling yields that the computational time remains unchanged across any network size. In other words, weak scaling ensures that we can simulate arbitrarily large-scale network models as long as sufficient computational power is provided. This way, human- scale or even larger simulations are possible. On the other hand, in strong scaling, the number of compute nodes is varied while fixing the network size. Perfect strong scaling yields that the computational time halves by doubling the computational power. In other words, strong scaling ensures that the computer simulation can be faster as more computational power is adopted. To accomplish human-scale simulation, the weak scaling property is important. Therefore, we examined the weak scaling
+property of our simulation.
+
+RESULTS
+Network Dynamics
+In the cerebellar network model, GRs in the granular layer receive external input from Pons cells (Figure 1B). First, we examined the network dynamics in response to spontaneous discharge in the Pons, which were firing at 8 Hz. In the spontaneous discharge condition, the average firing rate of STs, BAs, PCs, GRs, GOs, and DCNs were 14, 14, 55, 1.9, 0.10, and 27Hz, respectively. In Table 7, we compared the simulated firing rates and the experimental data in rodents.
+   Next, we carried out a simulation in Pons cells issuing spikes in a high frequency, which were firing at 50 Hz. Figure 2A shows a raster plot of GRs in response to constant strong input signals in the Pons. GRs repeatedly emitted spikes in bursts at
+
+random time intervals, then stopped suddenly. Different GRs showed different temporal activity patterns. To confirm the property, we calculated the similarity index by Eq. 2 and plotted it in Figure 2B. The similarity index monotonically decreases as flt increases. The result suggests that the population of active GRs changes gradually and slowly with time, and any population would appear only once during a cycle of the input signals (see Supplementary Material S1). This activity pattern emerged from the random recurrent inhibitory network, which was composed of GRs and GOs. These data reproduced the reservoir-like activity pattern of GRs demonstrated in previous studies (Yamazaki and Tanaka, 2007a).
+   Finally, we performed a computer simulation of the OKR. In the OKR, the cerebellar cortex receives two input signals (Figure 3A). Visual motion information is transmitted from the retina to the GRs through mossy fibers via NRTP. Information of retinal slip is transmitted to PCs through climbing fibers via the IO. The activity of VN cells that are the only output cells of the cerebellum correspond to eye movement (Figure 3A). We fed sinusoidally modulating external current like the visual motion pattern of Figure 3A into NRTP cells. NRTP cells exhibited sinusoidally modulating firing rates similar to a visual motion pattern (data not shown). Figure 3B shows the raster plot of GRs in response to the input signals in NRTP cells. We found that GRs exhibited a reservoir-like activity pattern. Figures 3C,D show the firing rate of PCs and VN cells, respectively. PCs modulated the firing rate out of phase with the firing rate of NRTP cells. The result corresponds to Figure 3A of a previous study by Yamazaki and Nagao (2012). In that figure, the modulation range of the firing frequency in PCs at the 100th cycle was 50-80 Hz. Our current simulation had the same modulation range as seen in previous study (Yamazaki and Nagao, 2012). The neural activity of PCs during the OKR has been recorded in various animals. The following shows the modulation ranges of the firing frequency in PCs in each study; 30-50 Hz (rabbit, Figure 3C in Nagao, 1988), 40-100 Hz (monkey, Figure 3C in Sato and Noda, 1992), 20-100 Hz (cat, Figure 2A in Kitama et al., 1999), 40-100 Hz
+
+
+
+
+TABLE 6 | Synaptic weights.
+
+Postsynaptic neuron
+
+ST	BA	PC	GR	GO	DCN	IO	Pons
+
+Presynaptic neuron
+ST	0.02	0.05
+BA	0.02	0.1
+PC	0.01	0.0025
+GR	0.00145	0.00145	0.0013	AMPA
+0.0008
+ NMDA 0.00017
+GO	3.0
+DCN
+IO	0.1
+Pons	0.5
+
+ST, stellate cell; BA, basket cell; PC, Purkinje cell; GR, granule cell; GO, Golgi cell; DCN, deep cerebellar nucleus cell; IO, inferior olive cell.
+
+
+TABLE 7 | Firing rates during resting state.
+
+Simulated firing ratesExperimental data in rodentsST14Hz14.9Hz (Blot et al., 2016), 20Hz (Jelitai et al., 2016)BA14Hz14.9Hz (Blot et al., 2016), 20Hz (Jelitai et al., 2016)PC55Hz48.9Hz (Blot et al., 2016), 66.9Hz (Jelitai et al., 2016)GR1.9Hz0.12Hz (Powell et al., 2015), 0.14Hz (Jelitai et al., 2016), 1.9Hz (Chen et al., 2017)GO0.10Hz2-25Hz (Holtzman et al., 2006), 7.53Hz (Dugué et al., 2009)DCN27Hz10Hz (Menardy et al., 2019), 36.6Hz (LeDoux et al., 1998)The experimental data indicate the average firing rates reported in the reference, except for Holtzman et al. (2006). For Holtzman et al. (2006), it is shown as the firing frequencies in the range. ST, stellate cell; BA, basket cell; PC, Purkinje cell; GR, granule cell; GO, Golgi cell; DCN, deep cerebellar nucleus cell.
+
+
+(mouse, Figure 3A in Yoshida et al., 2007). The simulation result in this study is within the range of the results in the animal studies. Furthermore, VN cells modulated the firing rate out of phase with the firing rate of PC cells due to disinhibition. This result corresponds to Figure 3B in a previous study by Yamazaki and Nagao (2012). In that figure, the modulation range of the firing frequency in VN cells at the 100th cycle was 30-90 Hz. In this simulation, the modulation range of the firing frequency in VNs was 20-50 Hz. Because the MONET simulator does not implement the plasticity rule, we did not investigate OKR gain adaptation. This issue will be discussed as a limitation in section "Discussion." Because activity of IO cells plays an important role in adaptation and is also too low, we did not feed sinusoidally modulating external current into the IO; therefore, we ignored inputs from retinal slip in this study.
+
+Weak Scaling Property
+We measured computational time while varying the number of compute nodes from 1,024-4,096 to 10,000-40,000 and finally 82,944, and while increasing the network size of the cerebellar network model. Thus, we analyzed the weak-scaling property of the cerebellar network model (Figure 4A). With 1,024 and 4,096 nodes, we changed the seed of the random number and carried out five simulations. Due to limited resources, it was not possible to carry out several simulations on more than 10,000 nodes. For each node, we obtained a computational time of 456, 459, 429, 425, and 578 s, respectively (blue squares, Figure 4A). The computational time did not increase until 40,000 nodes. However, at 82,944 nodes, the computational time increased by 1.5×. Nevertheless, this represents a good scaling
+property in this model.
+  The computational time was calculated for membrane potentials (neuron computational time), calculation of synaptic inputs (synapse computational time), and communication via network to exchange spike information among different computational nodes (communication time). Figure 4A shows each computational time at each node. From 1,024 to 82,944 nodes, there were no increases in neuron and synapse computational times; however, there was an increase in
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+communication time at 82,944 nodes. The increase in the total computational time at 82,944 nodes was due to the increase in communication time. Note that an increase in communication time was observed under some setting conditions at 1,024 and 4,096 nodes. In the MONET simulator, the cerebellar two-dimensional sheet is partitioned into regular square tiles and assigned to compute nodes on the K computer. There is a possibility that the tiles that require communication were distantly assigned to compute nodes. Therefore, the assignment may influence the communication time. The issue related to
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+0.5	1
+Time (s)1.50.51	1.5
+Time (s)
+
+
+
+
+
+
+
+optimally assigning tiles to compute nodes will be addressed in section "Discussion."
+   Using the full nodes (82,944 nodes) of the K computer, the total number of neurons in the human-scale cerebellar network model was 68,627,284,992 (approximately 68 billion), which is comparable to the human cerebellum (Herculano-Houzel, 2009). Furthermore, in the human-scale cerebellar network model, the total number of synapses was 5,389,950,000,000 (approximately 5.4 trillion). Finally, we examined the occupying memory for the human-scale cerebellar network model. In the K computer, each node has 16 GB of DRAM memory. In the simulation of the human-scale cerebellar network model, up to 9.6 GB of memory per node was occupied, then the total memory was 0.80 PB (9.6 GB per node × 82,944 nodes).
+We further examined the breakdown of computational time.
+Figure 4B shows a pie chart of the different components of the computational time with 1,024 nodes, which took 416 s to simulate 1 s of biological time. The neuron, synapse, and
+
+
+communication times were 35, 54, and 11%, respectively. The cerebellar network model for Figures 4A,B received constant strong inputs, indicating high activity in the whole network. Next, we sought to investigate the computational time when the activity in the whole network was low. We hypothesized that a lower activity state in the network model corresponded to spontaneous discharge. Therefore, we created a cerebellar network model with spontaneous discharge and performed the simulation with 1,024 nodes. The cerebellar network model with spontaneous discharge took 403 s to simulate 1 s of biological time, which was decreased compared with the cerebellar network model that received constant strong inputs (416 s). Figure 4C shows a pie chart of the different ratios of computational time per component. The neuron, synapse, and communication computational times were 47.9, 51.9, and
+<1%, respectively. The communication time in the cerebellar network model with spontaneous discharge was negligible compared with the cerebellar network model receiving constant
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+strong inputs. This was due to fewer emitted spikes in the cerebellar network model with spontaneous discharge; therefore, communication among nodes was reduced substantially. These results suggest that the MONET simulator implements efficient communication mechanisms.
+
+DISCUSSION
+Computer Simulation of a Human-Scale Cerebellar Network Model
+In this study, we built a cerebellar network model based on electrophysiological and anatomical data and carried out the simulation on the K computer using the MONET simulator. We carried out computer simulation of resting-state activity driven
+
+
+by spontaneous mossy fiber input signals as well as network dynamics during OKR. In the latter, we reproduced a reservoir- like activity pattern of granule cells and observed similar activity patterns in animal experiments (Yamazaki and Nagao, 2012). We also confirmed a good weak-scaling property from 1,024 to 82,944 computational nodes on the K computer. Using the full nodes (82,944 nodes) of the K computer, we were able to simulate a human-scale cerebellar model composed of approximately 68 billion neurons.
+  What can be done with such human-scale cerebellar simulation? Various potential usages are considered. Regarding its functional roles, the cerebellum is divided into functional modules called microcomplexes (Ito, 1984; Apps and Garwicz, 2005; Apps et al., 2018). A recent study using fMRI has demonstrated that the human cerebellum has functional
+
+
+
+parcellations in various tasks (King et al., 2019). It is assumed that even simple reflexive motor task such as OKR involve multiple microcomplexes of neural activity. Furthermore, a recent study in mice reports that performance of complex cognitive tasks involves widespread regions of the cerebral cortex (Pinto et al., 2019). Because the cerebellum interacts with those cortical regions (Buckner et al., 2011; Guell et al., 2018) in complex tasks in humans, it is assumed that widespread regions of the cerebellum engage with widespread cortical regions. Therefore, to explore how multiple regions in the human cerebellum interact to accomplish tasks, large-scale cerebellum simulation and even human- scale whole-brain simulation will be useful. Meanwhile, the connectome data from the human brain have been made available gradually. To incorporate human connectome data, a human-scale network model will be necessary. Once we succeed in adopting the human-level connectome data, we would reproduce the cerebellar activity during human-specific cognitive tasks. Eventually, a human-scale cerebellar model will be part of the human-scale whole brain simulation, which will be discuss later.
+
+Current Limitations and Future Extensions
+Although the present model is built based on known electrophysiological and anatomical data (Yamazaki and Nagao, 2012) and the size is unprecedented, several important features are missing. In the cerebellum, the plasticity at parallel fiber-Purkinje cell synapses plays prominent roles (Marr, 1969; Albus, 1971; Ito, 2001; Ito et al., 2014; Yamazaki et al., 2015; Yamazaki and Lennon, 2019). Moreover, there are various forms of synaptic plasticity distributed within the cerebellum (D'Angelo, 2014). Related to this plasticity, detailed synapse dynamics involving receptors and transporters such as metabotropic glutamate receptors and Ca2+ channels are also missing. Because these receptors and transporters contribute to the signaling processes in dendrites (Tank et al., 1988; Eilers et al., 1995; Ito, 2001, 2002), multi-compartment neuron models rather than single-compartment models used in this study must be taken into account. These are the future extensions that we aim to address.
+  Another limitation of the present simulation is the computational time. Even the simple simulation of resting state activity took 578 times more time than the wall clock time. This means that a computer simulation of cerebellar activity for just 1 min takes almost 10 h to complete. Such a slow computational time significantly constrains our research. For example, cerebellum-dependent motor learning takes at least a few hours or even days (Shutoh et al., 2006). Computer simulation of such learning is practically impossible. To accelerate computer simulation, special-purpose hardware for parallel computing such as graphics processing units (GPUs) provide tremendous computational power for cerebellum simulation. Yamazaki and Igarashi (2013) built a spiking network model of the cerebellum with 0.1 million neurons on GPU, and succeeded in simulating 1 s of biological time within 1 s of wall
+
+clock time (real-time simulation). Later, Yamazaki et al. (2019) employed the supercomputer Shoubu, which was composed of 1,024 PEZY-SC processors, and built a cat-scale cerebellar model with one billion spiking neurons enabling real-time simulation. Some cerebellar models are demonstrated in adaptive robot control (Garrido et al., 2013; Casellato et al., 2015). The next- generation Japanese flagship supercomputer, Fugaku, will have 100 times more computational capability than the K computer. The MONET simulator on Fugaku will be able to accomplish real-time simulation. Pursuing real-time simulation is another future extension.
+  Scaling property is also an issue. The MONET simulator successfully simulated the cerebellar network model with perfect weak scaling property until 40,000 nodes. However, the computational time increased with 82,944 nodes. This increase was due to a large increase in communication time. There are some possible causes for this increase in communication time. First, mapping the cerebellar two- dimensional sheet on the three-dimensional space of compute nodes interconnected by Tofu in the K computer influences communication time. There is a possibility that continuity between neighboring tiles is not preserved in the placement of the tiles on nodes. Therefore, distantly placed tiles may increase the communication time because of unnecessary distant communication and communication conflicts, especially when using large numbers of nodes. This may be relieved by mapping the sheets on the compute nodes while preserving their continuity. Second, there may be an increase in node synchronization latency. Subtle load unbalancing between nodes due to fluctuating neural activity may occur with small numbers of nodes; however, its effect on total elapsed times will increase as the number of nodes increases because synchronization requires a longer time for larger numbers of nodes. This problem might be solved in a supercomputer with a different topological network, such as a fat tree. Optimizing the simulator for Fugaku will be another important extension.
+
+Comparison With Other Large-Scale Models
+Modern supercomputers allow cerebellar researchers to build large-scale network models. The present model is at one end of the spectrum: the network size is large, but the neuron model is simple (i.e., point neurons). At the other end, the neuron model is elaborated (i.e., multi-compartment neurons), but the network size is not so large. Several researchers have built models with the latter makeup. Solinas et al. (2010) reported that center-surround receptive fields for granule cells as a spatiotemporal filter emerged from the network dynamics with Golgi cells. Billings et al. (2014) investigated the capability of lossless sparse encoding within the granular layer. Cayco-Gajic et al. (2017) examined information capacity of parallel fiber inputs on a Purkinje cell. Sudhakar et al. (2017) demonstrated synchronized oscillation between granule cells and Golgi cells in the granular layer. Multi-compartment neuron models make the network model more realistic, whereas due to the heavy computational load, the
+
+
+
+network size cannot be large. In fact, multi-compartment neuron models are used to study detailed intracellular dynamics of a single neuron (De Schutter and Bower, 1994a,b; Roth and Häusser, 2001; Steuber et al., 2007; Zang et al., 2018). Thus, there is a trade-off between the network size and the details of single neurons. To address this problem, Casali et al. (2019) proposed a scaffold cerebellar model, which aims to compromise the network size and neuron models.
+   On the cerebral cortical simulation, Izhikevich and Edelman reported a simulation of a thalamocortical circuit that has hundred billion neurons and almost one quadrillion synapses (Izhikevich, 2005; Izhikevich and Edelman, 2008), but the details were not described. Using the K computer, Kunkel et al. (2014) and Jordan et al. (2018) built a balanced random cortical network model composed of 80% excitatory and 20% inhibitory integrate-and-fire neurons using the NEST simulator (Gewaltig and Diesmann, 2007). These studies used the full nodes of the K computer, and in Jordan et al. (2018), the model was composed of 1.51 billion neurons and
+16.8 trillion synapses, which is one tenth of the number of neurons in the human cortex (Herculano-Houzel, 2009). However, the model took approximately 800 s to simulate
+1 s of the biological time. Using the MONET simulator, Igarashi et al. (2019) built a cortex model with 6.04 billion neurons and 24.5 trillion synapses, which is one third of the human cortex, on 63,504 nodes of the K computer, and the simulation took 322 s for simulation of 1 s biological time. Because the MONET simulator exhibits a good weak-scaling property (Igarashi et al., 2019), the simulator would simulate the cortex model of the same size with Jordan et al. (2018) twice times faster.
+  Besides these previous studies, ours is the first report of a cerebellar network model showing realistic behaviors with a good weak scaling property up to the human scale. In particular, the weak scaling property was realized by the crystallized anatomical structure of the cerebellum, which seems optimal for the tile- based decomposition method adopted in the MONET simulator.
+
+Toward Building a Whole-Brain Network Model
+The cerebellum is interconnected with other brain regions; the cerebral cortex and cerebellum form the cerebro-cerebellar communication loop (Kelly and Strick, 2003; Bostan et al., 2013; Proville et al., 2014; Voogd, 2014). In this loop, cerebellar outputs reach the primary motor and premotor cortex through the thalamus. Further, the cerebellum receives information from the primary motor and premotor cortex through the pons. Recent studies have demonstrated that the cerebellar- thalamo-cortical system plays an important role in motor control (Viaro et al., 2017; Nashef et al., 2018, 2019) and motor learning (Tanaka et al., 2018). A recent study also demonstrated that the cortico-cerebellar loop contributes to cognitive processes (Gao et al., 2018). In immobile animals, synchronization between cerebellar local field potentials (LFPs) and sensorimotor cortical LFPs within the theta frequency range has been shown (Courtemanche and Lamarre, 2005). To
+
+understand brain function, we need to consider interaction with multiple brain regions. We have developed a spiking neural network model of the primary motor cortex (Igarashi et al., 2019) and thalamus (unpublished data) using the MONET simulator. This simulator can connect the cerebellar network and thalamo- cortical network models (unpublished data). Our cerebellar- thalamo-cortical network model might advance understanding of the functional interaction of the cerebral cortex and cerebellum, and the mechanism of synchronization. In addition, previous studies have demonstrated that the cerebellum and basal ganglia are interconnected (Hoshi et al., 2005; Bostan et al., 2010, 2013; Bostan and Strick, 2018). Recent studies have also demonstrated that the cerebellar output influences the neuronal activity of the basal ganglia and basal ganglia- dependent behavior (Chen et al., 2014; Xiao et al., 2018). To examine roles of these inter-regional communications in both motor and cognitive functions, a whole-brain model will be necessary.
+  Furthermore, the brain has multiple learning systems. Particularly, the cerebral cortex, cerebellum, and basal ganglia are considered unsupervised, supervised, and reinforcement learning system, respectively (Doya, 1999, 2000). Recently, Yamazaki and Lennon (2019) have proposed that the cerebellum is a reinforcement learning machine. These studies suggest that multiple learning systems (supervised and reinforcement learning systems) are driven in parallel in the cerebellum. Large- scale cerebellum and whole-brain simulations would allow us to explore how multiple learning systems work in parallel in the cerebellum and even in the whole-brain. In addition to neurons, experimental evidence on the role of glia cells are accumulating (Ben Haim and Rowitch, 2017). It would be interesting to incorporate neurons and glia cells into the human-scale cerebellum and whole-brain model. We believe that simulations of the models will bring new insights.
+
+CONCLUSION
+We built a cerebellar network model based on electrophysiological and anatomical data on the K computer using the MONET simulator. The cerebellar network model with the MONET simulator reproduced the activity pattern of granule cells and the OKR simulation as shown by the previous cerebellar network model. Moreover, the MONET simulator showed good weak scaling for our cerebellar network model. Eventually, we demonstrated a human-scale cerebellar network model simulation. These results serve as a fundamental step toward human-scale whole-brain simulations and contribute to our exploration of the computational mechanisms in the human cerebellum.
+
+DATA AVAILABILITY STATEMENT
+The complete JSON file of the computer settings and the neural network parameters for the cerebellar model can be found in the GitHub https://github.com/yamaurahiroshi/MONET.
+
+
+
+AUTHOR CONTRIBUTIONS
+HY, JI, and TY designed the study and, analyzed and interpreted the simulated data; HY performed the simulations; JI developed the neural network simulation software. HY and TY wrote the manuscript.
+
+
+FUNDING
+This work was supported by the Ministry of Education, Culture, Sports, Science and Technology (MEXT) as "Post-K Exploratory Challenge #4" (Big Brain-Data Analysis, Whole Brain-Scale Simulation, and Brain-Style AI Architecture) (hpci160246,
+
+hpci170243, and hpci180189). Part of this work was supported by MEXT KAKENHI Grant number 17H06310.
+
+ACKNOWLEDGMENTS
+We thank Drs. Kenji Doya, Zhe Sun, Heidarinejad Morteza, and Carlos Gutierrez for helpful discussions.
+
+SUPPLEMENTARY MATERIAL
+The Supplementary Material for this article can be found online at: https://www.frontiersin.org/articles/10.3389/fninf. 2020.00016/full#supplementary-material
+
+
+
+REFERENCES
+Albus, J. S. (1971). A theory of cerebellar function. Math. Biosci. 10, 25-61. doi: 10.1016/0025-5564(71)90051-4
+Amunts, K., Ebell, C., Muller, J., Telefont, M., Knoll, A., and Lippert, T. (2016). The Human Brain Project: creating a European research infrastructure to decode the human brain. Neuron 92, 574-581. doi: 10.1016/j.neuron.2016.10.046
+Apps, R., and Garwicz, M. (2005). Anatomical and physiological foundations of cerebellar information processing. Nat. Rev. Neurosci. 6, 297-311. doi: 10.1038/ nrn1646
+Apps, R., Hawkes, R., Aoki, S., Bengtsson, F., Brown, A. M., Chen, G., et al. (2018). Cerebellar modules and their role as operational cerebellar processing units. Cerebellum 17, 654-682. doi: 10.1007/s12311-018-0952-3
+Barmack, N. H., and Yakhnitsa, V. (2008a). Functions of interneurons in mouse cerebellum. J. Neurosci. 28, 1140-1152. doi: 10.1523/jneurosci.3942-07.
+2008
+Barmack, N. H., and Yakhnitsa, V. (2008b). Distribution of granule cells projecting to focal Purkinje cells in mouse uvula-nodulus. Neuroscience 156, 216-221. doi: 10.1016/j.neuroscience.2008.07.030
+Ben Haim, L., and Rowitch, D. H. (2017). Functional diversity of astrocytes in neural circuit regulation. Nat. Rev. Neurosci. 18, 31-41. doi: 10.1038/nrn.2016. 159
+Billings, G., Piasini, E., Lõrincz, A., Nusser, Z., and Silver, R. A. (2014). Network structure within the cerebellar input layer enables lossless sparse encoding. Neuron 83, 960-974. doi: 10.1016/j.neuron.2014.07.020
+Blot, A., de Solages, C., Ostojic, S., Szapiro, G., Hakim, V., and Léna, C. (2016). Time-invariant feed-forward inhibition of Purkinje cells in the cerebellar cortex in vivo. J. Physiol. 594, 2729-2749. doi: 10.1113/JP271518
+Bostan, A. C., Dum, R. P., and Strick, P. L. (2010). The basal ganglia communicate with the cerebellum. Proc. Natl. Acad. Sci. U.S.A. 107, 8452-8456. doi: 10.1073/ pnas.1000496107
+Bostan, A. C., Dum, R. P., and Strick, P. L. (2013). Cerebellar networks with the cerebral cortex and basal ganglia. Trends Cogn. Sci. 17, 241-254. doi: 10.1016/j. tics.2013.03.003
+Bostan, A. C., and Strick, P. L. (2018). The basal ganglia and the cerebellum: nodes in an integrated network. Nat. Rev. Neurosci. 19, 338-350. doi: 10.1038/s41583- 018-0002-7
+Buckner, R. L. (2013). The cerebellum and cognitive function: 25 years of insight from anatomy and neuroimaging. Neuron 80, 807-815. doi: 10.1016/j.neuron. 2013.10.044
+Buckner, R. L., Krienen, F. M., Castellanos, A., Diaz, J. C., and Yeo, B. T. (2011). The organization of the human cerebellum estimated by intrinsic functional connectivity. J. Neurophysiol. 106, 2322-2345. doi: 10.1152/jn.00339.
+2011
+Casali, S., Marenzi, E., Medini, C., Casellato, C., and D'Angelo, E. (2019). Reconstruction and simulation of a scaffold model of the cerebellar network. Front. Neuroinform. 13:37. doi: 10.3389/fninf.2019.00037
+
+Casellato, C., Antonietti, A., Garrido, J., Ferrigno, G., D'Angelo, E., and Pedrocchi,
+A. (2015). Distributed cerebellar plasticity implements generalized multiple- scale memory components in real-robot sensorimotor tasks. Front. Comput. Neurosci. 9:24. doi: 10.3389/fncom.2015.00024
+Cayco-Gajic, N. A., Clopath, C., and Silver, R. A. (2017). Sparse synaptic connectivity is required for decorrelation and pattern separation in feedforward networks. Nat. Commun. 8:1116. doi: 10.1038/s41467-017-01109-y
+Chen, C. H., Fremont, R., Arteaga-Bracho, E. E., and Khodakhah, K. (2014). Short latency cerebellar modulation of the basal ganglia. Nat. Neurosci. 17, 1767-1775. doi: 10.1038/nn.3868
+Chen, S., Augustine, G. J., and Chadderton, P. (2017). Serial processing of kinematic signals by cerebellar circuitry during voluntary whisking. Nat. Commun. 8:232. doi: 10.1038/s41467-017-00312-1
+Courtemanche, R., and Lamarre, Y. (2005). Local field potential oscillations in primate cerebellar cortex: synchronization with cerebral cortex during active and passive expectancy. J. Neurophysiol. 93, 2039-2052. doi: 10.1152/jn.00080. 2004
+Crowley, J. J., Fioravante, D., and Regehr, W. G. (2009). Dynamics of fast and slow inhibition from cerebellar golgi cells allow flexible control of synaptic integration. Neuron 63, 843-853. doi: 10.1016/j.neuron.2009.09.004
+D'Angelo, E. (2014). The organization of plasticity in the cerebellar cortex: from synapses to control. Prog. Brain Res. 210, 31-58. doi: 10.1016/B978-0-444-
+63356-9.00002-9
+De Schutter, E., and Bower, J. M. (1994a). An active membrane model of the cerebellar Purkinje cell. I. Simulation of current clamps in slice. J. Neurophysiol. 71, 375-400. doi: 10.1152/jn.1994.71.1.375
+De Schutter, E., and Bower, J. M. (1994b). An active membrane model of the cerebellar Purkinje cell II. Simulation of synaptic responses. J. Neurophysiol. 71, 401-419. doi: 10.1152/jn.1994.71.1.401
+Dizon, M. J., and Khodakhah, K. (2011). The role of interneurons in shaping Purkinje cell responses in the cerebellar cortex. J. Neurosci. 31, 10463-10473. doi: 10.1523/JNEUROSCI.1350-11.2011
+Doya, K. (1999). What are the computations of the cerebellum, the basal ganglia and the cerebral cortex? Neural Netw. 12, 961-974. doi: 10.1016/s0893- 6080(99)00046-5
+Doya, K. (2000). Complementary roles of basal ganglia and cerebellum in learning and motor control. Curr. Opin. Neurobiol. 10, 732-739. doi: 10.1016/s0959- 4388(00)00153-7
+Dugué, G. P., Brunel, N., Hakim, V., Schwartz, E., Chat, M., Lévesque, M., et al. (2009). Electrical coupling mediates tunable low-frequency oscillations and resonance in the cerebellar Golgi cell network. Neuron 61, 126-139. doi: 10. 1016/j.neuron.2008.11.028
+Eccles, J. C., Ito, M., and Szentàgothai, J. (1967). The Cerebellum as a Neuronal Machine. New York, NY: Springer-Verlag.
+Eilers, J., Augustine, G. J., and Konnerth, A. (1995). Subthreshold synaptic Ca2+
+signalling in fine dendrites and spines of cerebellar Purkinje neurons. Nature
+373, 155-158. doi: 10.1038/373155a0
+
+
+
+Gao, Z., Davis, C., Thomas, A. M., Economo, M. N., Abrego, A. M., Svoboda, K., et al. (2018). A cortico-cerebellar loop for motor planning. Nature 563, 113-116. doi: 10.1038/s41586-018-0633-x
+Garrido, J., Luque, N. R., D'Angelo, E., and Ros, E. (2013). Distributed cerebellar plasticity implements adaptable gain control in a manipulation task: a closed- loop robotic simulation. Front. Neural Circuits 7:159. doi: 10.3389/fncir.2013. 00159
+Gewaltig, M. O., and Diesmann, M. (2007). NEST (NEural Simulation Tool).
+Scholarpedia 2:1430. doi: 10.4249/scholarpedia.1430
+Guell, X., Schmahmann, J. D., Gabrieli, J., and Ghosh, S. S. (2018). Functional gradients of the cerebellum. eLife 7:e36652. doi: 10.7554/eLife.36652
+Harvey, R. J., and Napper, R. M. (1991). Quantitative studies on the mammalian cerebellum. Prog. Neurobiol. 36, 437-463. doi: 10.1016/0301-0082(91)900 12-p
+Heckroth, J. A. (1994). Quantitative morphological analysis of the cerebellar nuclei in normal and lurcher mutant mice. I. Morphology and cell number. J. Comp. Neurol. 343, 173-182. doi: 10.1002/cne.903430113
+Helias, M., Kunkel, S., Masumoto, G., Igarashi, J., Eppler, J. M., Ishii, S., et al. (2012). Supercomputers ready for use as discovery machines for neuroscience. Front. Neuroinform. 6:26. doi: 10.3389/fninf.2012.00026
+Herculano-Houzel, S. (2009). The human brain in numbers: a linearly scaled-up primate brain. Front. Hum. Neurosci. 3:31. doi: 10.3389/neuro.09.031.2009 Holtzman, T., Rajapaksa, T., Mostofi, A., and Edgley, S. A. (2006). Different
+responses of rat cerebellar Purkinje cells and Golgi cells evoked by widespread convergent sensory inputs. J. Physiol. 574, 491-507. doi: 10.1113/jphysiol.2006. 108282
+Hoshi, E., Tremblay, L., Féger, J., Carras, P. L., and Strick, P. L. (2005). The cerebellum communicates with the basal ganglia. Nat. Neurosci. 8, 1491-1493. doi: 10.1038/nn1544
+Hull, C., and Regehr, W. G. (2012). Identification of an inhibitory circuit that regulates cerebellar Golgi cell activity. Neuron 73, 149-158. doi: 10.1016/j. neuron.2011.10.030
+Igarashi, J., Yamaura, H., and Yamazaki, T. (2019). Large-scale simulation of a layered cortical sheet of spiking network model using a tile partitioning method. Front. Neuroinform. 13:71. doi: 10.3389/fninf.2019.00071
+Isope, P., and Barbour, B. (2002). Properties of unitary granule cell->Purkinje cell synapses in adult rat cerebellar slices. J. Neurosci. 22, 9668-9678. doi: 10.1523/jneurosci.22-22-09668.2002
+Ito, M. (1984). The Cerebellum and Neural Control. New York, NY: Raven Press. Ito, M. (2000). Mechanisms of motor learning in the cerebellum. Brain Res. 886,
+237-245.
+Ito, M. (2001). Cerebellar long-term depression: characterization, signal transduction, and functional roles. Physiol. Rev. 81, 1143-1195. doi: 10.1152/physrev.2001.81.3.1143
+Ito, M. (2002). The molecular organization of cerebellar long-term depression. Nat.
+Rev. Neurosci. 3, 896-902. doi: 10.1038/nrn962
+Ito, M. (2012). The Cerebellum: Brain for an Implicit Self. Upper Saddle River, NJ: FT Press.
+Ito, M., Yamaguchi, K., Nagao, S., and Yamazaki, T. (2014). Long-term depression as a model of cerebellar plasticity. Prog. Brain Res. 210, 1-30. doi: 10.1016/B978- 0-444-63356-9.00001-7
+Izhikevich, E. M. (2005). Simulation of Large-Scale Brain Models. Available at: https://www.izhikevich.org/human_brain_simulation/Blue_Brain.htm# Simulation%20of%20Large-Scale%20Brain%20Models (accessed November 1, 2019).
+Izhikevich, E. M., and Edelman, G. M. (2008). Large-scale model of mammalian thalamocortical systems. Proc. Natl. Acad. Sci. U.S.A. 105, 3593-3598. doi: 10.1073/pnas.0712231105
+Jelitai, M., Puggioni, P., Ishikawa, T., Rinaldi, A., and Duguid, I. (2016). Dendritic excitation-inhibition balance shapes cerebellar output during motor behaviour. Nat. Commun. 7:13722. doi: 10.1038/ncomms13722
+Jordan, J., Ippen, T., Helias, M., Kitayama, I., Sato, M., Igarashi, J., et al. (2018). Extremely scalable spiking neuronal network simulation code: from laptops to exascale computers. Front. Neuroinform. 12:2. doi: 10.3389/fninf.2018.0 0002
+Kelly, R. M., and Strick, P. L. (2003). Cerebellar loops with motor cortex and prefrontal cortex of a nonhuman primate. J. Neurosci. 23, 8432-8444. doi: 10.1523/jneurosci.23-23-08432.2003
+
+Kim, J., Lee, S., Tsuda, S., Zhang, X., Asrican, B., Gloss, B., et al. (2014). Optogenetic mapping of cerebellar inhibitory circuitry reveals spatially biased coordination of interneurons via electrical synapses. Cell Rep. 7, 1601-1613. doi: 10.1016/j. celrep.2014.04.047
+King, M., Hernandez-Castillo, C. R., Poldrack, R. A., Ivry, R. B., and Diedrichsen,
+J. (2019). Functional boundaries in the human cerebellum revealed by a multi- domain task battery. Nat. Neurosci. 22, 1371-1378. doi: 10.1038/s41593-019- 0436-x
+Kitama, T., Omata, T., Mizukoshi, A., Ueno, T., and Sato, Y. (1999). Motor dynamics encoding in cat cerebellar flocculus middle zone during optokinetic eye movements. J. Neurophysiol. 82, 2235-2248. doi: 10.1152/jn.1999.82.5.2235 Kunkel, S., Schmidt, M., Eppler, J. M., Plesser, H. E., Masumoto, G., Igarashi, J., et al. (2014). Spiking network simulation code for petascale computers. Front.
+Neuroinform. 8:78. doi: 10.3389/fninf.2014.00078
+Lange, W. (1974). Regional differences in the distribution of golgi cells in the cerebellar cortex of man and some other mammals. Cell Tissue Res. 153, 219-226.
+Lange, W. (1975). Cell number and cell density in the cerebellar cortex of man and some other mammals. Cell Tissue Res. 157, 115-124.
+LeDoux, M. S., Hurst, D. C., and Lorden, J. F. (1998). Single-unit activity of cerebellar nuclear cells in the awake genetically dystonic rat. Neuroscience 86, 533-545. doi: 10.1016/s0306-4522(98)00007-4
+Lieberman, D. (2014). The Story of the Human Body: Evolution, Health, and Disease.
+New York, NY: Pantheon Books.
+Marr, D. (1969). A theory of cerebellar cortex. J. Physiol. 202, 437-470. doi: 10.1113/jphysiol.1969.sp008820
+Menardy, F., Varani, A. P., Combes, A., Léna, C., and Popa, D. (2019). Functional alteration of cerebello-cerebral coupling in an experimental mouse model of Parkinson's disease. Cereb. Cortex 29, 1752-1766. doi: 10.1093/cercor/bhy346
+Miyazaki, H., Kusano, Y., Shinjou, N., Fumiyoshi, S., Yokokawa, M., and Watanabe, T. (2012). Overview of the K computer system. Fujitsu Sci. Tech.
+J. 48, 255-265.
+Moren, J., Igarashi, J., Shouno, O., Yoshimoto, J., and Doya, K. (2019). "Dynamics of basal ganglia and thalamus in Parkinsonian tremor," in Multiscale Models of Brain Disorders, ed. V. Cutsuridis (New York, NY: Springer-Verlag), 13-20. doi: 10.1007/978-3-030-18830-6_2
+Nagao, S. (1988). Behavior of floccular Purkinje cells correlated with adaptation of horizontal optokinetic eye movement response in pigmented rabbits. Exp. Brain Res. 73, 489-497. doi: 10.1007/bf00406606
+Nashef, A., Cohen, O., Harel, R., Israel, Z., and Prut, Y. (2019). Reversible block of cerebellar outflow reveals cortical circuitry for motor coordination. Cell Rep. 27, 2608-2619. doi: 10.1016/j.celrep.2019.04.100
+Nashef, A., Cohen, O., Israel, Z., Harel, R., and Prut, Y. (2018). Cerebellar shaping of motor cortical firing is correlated with timing of motor actions. Cell Rep. 23, 1275-1285. doi: 10.1016/j.celrep.2018.04.035
+Person, A. L., and Raman, I. M. (2012). Purkinje neuron synchrony elicits time- locked spiking in the cerebellar nuclei. Nature 481, 502-505. doi: 10.1038/ nature10732
+Pinto, L., Rajan, K., DePasquale, B., Thiberge, S. Y., Tank, D. W., and Brody, C. D. (2019). Task-dependent changes in the large-scale dynamics and necessity of cortical regions. Neuron 104, 810-824. doi: 10.1016/j.neuron.2019.08.025
+Powell, K., Mathy, A., Duguid, I., and Häusser, M. (2015). Synaptic representation of locomotion in single cerebellar granule cells. eLife 4:e07290. doi: 10.7554/ eLife.07290
+Proville, R. D., Spolidoro, M., Guyon, N., Dugué, G. P., Selimi, F., Isope, P., et al. (2014). Cerebellum involvement in cortical sensorimotor circuits for the control of voluntary movements. Nat. Neurosci. 17, 1233-1239. doi: 10.1038/nn.3773
+Rieubland, S., Roth, A., and Häusser, M. (2014). Structured connectivity in cerebellar inhibitory networks. Neuron 81, 913-929. doi: 10.1016/j.neuron. 2013.12.029
+Roth, A., and Häusser, M. (2001). Compartmental models of rat cerebellar Purkinje cells based on simultaneous somatic and dendritic patch-clamp recordings.
+J. Physiol. 535, 445-472. doi: 10.1111/j.1469-7793.2001.00445.x
+Sato, H., and Noda, H. (1992). Posterior vermal Purkinje cells in macaques responding during saccades, smooth pursuit, chair rotation and/or optokinetic stimulation. Neurosci. Res. 12, 583-595. doi: 10.1016/0168-0102(92)90065-k
+Shutoh, F., Ohki, M., Kitazawa, H., Itohara, S., and Nagao, S. (2006). Memory trace of motor learning shifts transsynaptically from cerebellar cortex to nuclei for
+
+
+
+consolidation. Neuroscience 139, 767-777. doi: 10.1016/j.neuroscience.2005.1
+2.035
+Solinas, S., Nieus, T., and D'Angelo, E. (2010). A realistic large-scale model of the cerebellum granular layer predicts circuit spatio-temporal filtering properties. Front. Cell. Neurosci. 4:12. doi: 10.3389/fncel.2010.00012
+Steuber, V., Mittmann, W., Hoebeek, F. E., Silver, R. A., De Zeeuw, C. I., Häusser, M., et al. (2007). Cerebellar LTD and pattern recognition by Purkinje cells. Neuron 54, 121-136. doi: 10.1016/j.neuron.2007.03.015
+Sudhakar, S. K., Hong, S., Raikov, I., Publio, R., Lang, C., Close, T., et al. (2017). Spatiotemporal network coding of physiological mossy fiber inputs by the cerebellar granular layer. PLoS Comput. Biol. 13:e1005754. doi: 10.1371/journal. pcbi.1005754
+Tanaka, Y. H., Tanaka, Y. R., Kondo, M., Terada, S. I., Kawaguchi, Y., and Matsuzaki, M. (2018). Thalamocortical axonal activity in motor cortex exhibits layer-specific dynamics during motor learning. Neuron 100, 244-258. doi: 10. 1016/j.neuron.2018.08.016
+Tank, D. W., Sugimori, M., Connor, J. A., and Llinás, R. R. (1988). Spatially resolved calcium dynamics of mammalian Purkinje cells in cerebellar slice. Science 242, 773-777. doi: 10.1126/science.2847315
+Viaro, R., Bonazzi, L., Maggiolini, E., and Franchi, G. (2017). Cerebellar modulation of cortically evoked complex movements in rats. Cereb. Cortex 27, 3525-3541. doi: 10.1093/cercor/bhw167
+Voogd, J. (2014). What we do not know about cerebellar systems neuroscience.
+Front. Syst. Neurosci. 8:227. doi: 10.3389/fnsys.2014.00227
+Walter, J. T., Dizon, M. J., and Khodakhah, K. (2009). The functional equivalence of ascending and parallel fiber inputs in cerebellar computation. J. Neurosci. 29, 8462-8473. doi: 10.1523/JNEUROSCI.5718-08.2009
+Xiao, L., Bornmann, C., Hatstatt-Burklé, L., and Scheiffele, P. (2018). Regulation of striatal cells and goal-directed behavior by cerebellar outputs. Nat. Commun. 9:3133. doi: 10.1038/s41467-018-05565-y
+Yamazaki, T., and Igarashi, J. (2013). Realtime cerebellum: a large-scale spiking network model of the cerebellum that runs in realtime using a graphics processing unit. Neural Netw. 47, 103-111. doi: 10.1016/j.neunet.2013.01.019
+Yamazaki, T., Igarashi, J., Makino, J., and Ebisuzaki, T. (2019). Real-time simulation of a cat-scale artificial cerebellum on PEZY-SC processors. Int. J. High Perform. Comput. Appl. 33, 155-168. doi: 10.1177/1094342017710705
+
+Yamazaki, T., and Lennon, W. (2019). Revisiting a theory of cerebellar cortex.
+Neurosci. Res. 148, 1-8. doi: 10.1016/j.neures.2019.03.001
+Yamazaki, T., and Nagao, S. (2012). A computational mechanism for unified gain and timing control in the cerebellum. PLoS One 7:e33319. doi: 10.1371/journal. pone.0033319
+Yamazaki, T., Nagao, S., Lennon, W., and Tanaka, S. (2015). Modeling memory consolidation during posttraining periods in cerebellovestibular learning. Proc. Natl. Acad. Sci. U.S.A. 112, 3541-3546. doi: 10.1073/pnas.141379 8112
+Yamazaki, T., and Tanaka, S. (2005). Neural modeling of an internal clock. Neural Comput. 17, 1032-1058. doi: 10.1162/089976605349 1850
+Yamazaki, T., and Tanaka, S. (2007a). The cerebellum as a liquid state machine. Neural Netw. 20, 290-297. doi: 10.1016/j.neunet.2007.0 4.004
+Yamazaki, T., and Tanaka, S. (2007b). A spiking network model for passage-of- time representation in the cerebellum. Eur. J. Neurosci. 26, 2279-2292. doi: 10.1111/j.1460-9568.2007.05837.x
+Yoshida, T., Funabiki, K., and Hirano, T. (2007). Increased occurrence of climbing fiber inputs to the cerebellar flocculus in a mutant mouse is correlated with the timing delay of optokinetic response. Eur. J. Neurosci. 25, 1467-1474. doi: 10.1111/j.1460-9568.2007.05394.x
+Zang, Y., Dieudonné, S., and De Schutter, E. (2018). Voltage- and branch-specific climbing fiber responses in Purkinje cells. Cell Rep. 24, 1536-1549. doi: 10.1016/ j.celrep.2018.07.011
+
+Conflict of Interest: The authors declare that the research was conducted in the absence of any commercial or financial relationships that could be construed as a potential conflict of interest.
+
+Copyright (c) 2020 Yamaura, Igarashi and Yamazaki. This is an open-access article distributed under the terms of the Creative Commons Attribution License (CC BY). The use, distribution or reproduction in other forums is permitted, provided the original author(s) and the copyright owner(s) are credited and that the original publication in this journal is cited, in accordance with accepted academic practice. No use, distribution or reproduction is permitted which does not comply with these terms.
+
+
+
+
+
+
